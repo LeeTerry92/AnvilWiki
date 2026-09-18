@@ -30,7 +30,7 @@ export const zh: LandingContent = {
   description:
     '开源游戏 wiki 模板 + AI 原生内容工作流:选对游戏、和 AI 对话就能产页、codes 页自动保鲜。Lighthouse 4×100、Cloudflare 免费部署、广告收入 100% 归你。',
   announcement: {
-    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：新增「wiki page templates」模板展示页（/landing/templates，中文版 /zh/landing/templates）——把模板能产出的每种页型（Boss 攻略/兑换码/Tier List/新手攻略/物品页/文档中心）各挂一张 demo 真实页面卡片，页尾导流 GitHub fork；承接「wiki template / wiki page template」长尾搜索（约 1,000+/月，SimilarWeb 2026-08）。landing 导航新增 Templates 入口；新文案独立成文件，landing-en/zh 两模块零触碰。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
+    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：IndexNow 升级为可选自动化——配置一次 INDEXNOW_KEY + SITE_URL，main CI 每次成功自动替你提交生产 sitemap（部署标记同步；PR CI 与未配置 fork 恒零请求）。fork 重跑保留你自己的广告单元——public/ads/*.html 改按内容判定、不再看文件名（来自真实 fork 反馈）。VideoObject JSON-LD 补齐 Google 必填 description。社区案例新增两站：Warhounds Wiki 与 Sandustry.top。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
     href: RELEASES,
     dismissLabel: '关闭公告',
   },

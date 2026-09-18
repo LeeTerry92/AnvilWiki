@@ -18,7 +18,7 @@ export const en: LandingContent = {
   description:
     'An open-source game wiki template with an AI-native content workflow: pick the right game, generate pages by talking to your AI tool, codes pages stay fresh on autopilot. Lighthouse 4×100, free on Cloudflare, 100% ad revenue yours.',
   announcement: {
-    text: `AnvilWiki template update log (v${PROJECT_VERSION}): new "wiki page templates" showcase page (/landing/templates, 中文版 /zh/landing/templates) — every page type the template produces (boss guide, codes page, tier list, beginner guide, item pages, docs center), each card linked to a real page on the live demo, closing with a fork CTA. Catches the "wiki template / wiki page template" long tail (~1k+ monthly searches, SimilarWeb 2026-08). Landing header/nav gains a Templates entry; the new copy ships in its own config file, the landing-en/zh modules are untouched. Forks: merge upstream and pnpm install as usual. This bar tracks template releases — details & full changelog on GitHub Releases.`,
+    text: `AnvilWiki template update log (v${PROJECT_VERSION}): IndexNow goes opt-in automatic — set INDEXNOW_KEY + SITE_URL once and every successful main-CI run submits your production sitemap for you (deploy-marker synced; PR CI and unconfigured forks stay at zero requests). Fork reruns now keep your own ad units — public/ads/*.html is judged by content, not filename (real-fork fix). VideoObject JSON-LD gains the Google-required description. Two new community showcase sites: Warhounds Wiki and Sandustry.top. Forks: merge upstream and pnpm install as usual. This bar tracks template releases — details & full changelog on GitHub Releases.`,
     href: RELEASES,
     dismissLabel: 'Dismiss announcement',
   },

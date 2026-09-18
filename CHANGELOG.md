@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.33.0] — 2026-09-18
+
 ### Added
 
 - **IndexNow 环境变量化 + 成功 CI 后自动推送（opt-in）**：新增 `INDEXNOW_KEY` 配置，postbuild 仅在该值存在时生成 `dist/<key>.txt` 所有权文件；新增独立 `.github/workflows/indexnow.yml`，只在 `main` 的 push CI 成功后、且 GitHub Actions repository variables 同时配置 `SITE_URL` / `INDEXNOW_KEY` 时运行，等待 Cloudflare Pages 的 `/.well-known/anvilwiki-deploy.txt` 匹配当前 commit 后再校验相同 key 文件，并读取**生产 sitemap**提交，PR CI 永不推送且 IndexNow 失败不阻断主 CI。默认空值保持模板零外部请求。
@@ -1237,7 +1239,8 @@ This release covers everything since v0.2.0: the full PRD roadmap (v1.1–v2.0) 
 - Docs: PRD (1600+ lines), deployment, apply-template (4-step guide), content-format, seo, ads, migration-from-nextjs
 - Build: 27 pages, typecheck 0 errors
 
-[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.32.0...HEAD
+[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.0...HEAD
+[2.33.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.31.1...v2.32.0
 [2.31.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.31.0...v2.31.1
 [2.31.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.30.0...v2.31.0

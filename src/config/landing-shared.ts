@@ -125,4 +125,16 @@ export const COMMUNITY_SITES: {
     descriptionZh:
       'Warhounds 的独立战术策略 wiki——基于来源核验的职业、战斗、基地管理、装备、任务与当前版本攻略。',
   },
+  {
+    name: 'Sandustry.top',
+    url: 'https://sandustry.top/',
+    game: 'Sandustry',
+    image: '/images/showcase/sites/sandustry.jpg',
+    imageAltEn: 'Screenshot of the Sandustry.top homepage',
+    imageAltZh: 'Sandustry.top 首页截图',
+    descriptionEn:
+      'An independent Sandustry guide site for factory automation — recipes, machines, production chains, world seeds, troubleshooting, and Early Access status.',
+    descriptionZh:
+      'Sandustry 的独立工厂自动化攻略站——配方、机器、生产链、世界种子、故障排查与抢先体验版本信息。',
+  },
 ];

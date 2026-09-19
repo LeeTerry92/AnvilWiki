@@ -38,7 +38,7 @@ pages_build_output_dir = "dist"
 SITE_URL = "https://anvil.wiki"
 # IndexNow ownership key (optional; blank = no key file / no automatic submission)
 # Set the same value in GitHub Actions repository variable INDEXNOW_KEY.
-#INDEXNOW_KEY = ""
+INDEXNOW_KEY = "736d8608fdec899849d382dffdaf4dda78605ffe0f40e2f1dbb57c7390341bed"
 # Giscus comments (DEMO — anvil.wiki points at PNGTRID/AnvilWiki Discussions)
 PUBLIC_GISCUS_REPO = "PNGTRID/AnvilWiki"
 PUBLIC_GISCUS_REPO_ID = "R_kgDOT1aRPQ"

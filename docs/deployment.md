@@ -333,6 +333,8 @@ curl -I https://<你的域名>/privacy-policy/
    
    IndexNow 是变更通知，不等于保证抓取或收录；Google Search Console / sitemap 仍是独立链路。
 
+**key 轮换**：`INDEXNOW_KEY` 的活跃副本共三处——Cloudflare 生产构建（`wrangler.toml` 的 `[vars]`，或 dashboard Variables）、GitHub 仓库 Actions variable、本地 `.env`（若配了手工命令）。轮换时三处必须同步更新：Cloudflare 侧与 Actions variable 任一侧漏改，自动推送都会因「等不到对应 `<key>.txt` 上线」响亮失败（有重试与超时，不会静默提交）；本地 `.env` 漏改只影响手工命令。
+
 需要手工检查而不发送请求：
 
 ```bash

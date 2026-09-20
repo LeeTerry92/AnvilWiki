@@ -550,8 +550,10 @@ export const DEMO_VAR_VALUES: readonly string[] = [
   'e2ad36227bacdad94a4bfe6a9a6d3dac',
   // Demo GA4 measurement ID
   'G-X10CG7N6P6',
-  // Demo IndexNow key (must rotate together with wrangler.toml [vars]; the
-  // drift-guard test pins both sides)
+  // Demo IndexNow key. Rotation touches FOUR live copies: wrangler.toml
+  // [vars] (the drift-guard test pins this against the registry), the
+  // GitHub Actions variable INDEXNOW_KEY, the local .env, and this entry —
+  // the last two live outside the repo, no test can cover them.
   '736d8608fdec899849d382dffdaf4dda78605ffe0f40e2f1dbb57c7390341bed',
 ];
 

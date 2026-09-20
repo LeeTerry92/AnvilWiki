@@ -36,7 +36,9 @@
  *      push CI can submit, both repo variables must exist, and submission
  *      waits for the matching deployed key before calling IndexNow.
  */
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { expect, test, describe } from 'vitest';
@@ -366,9 +368,13 @@ describe('setup.yml [vars] rewrite is line-anchored and key-aligned with the CLI
   test('the FORKER warning block is removed after the rewrite (JS-channel parity)', () => {
     // After a successful rewrite the warning would claim the file still holds
     // the DEMO config — stale and misleading, so the python channel must strip
-    // it with the same ASCII-anchored regex the JS channel uses.
-    expect(setupRaw).toContain(String.raw`re.sub(r'# .*FORKERS READ THIS FIRST`);
+    // it with the same ASCII-anchored regex the JS channel uses. subn + a
+    // no-match warning keeps a drifted anchor from silently no-oping (audit
+    // round 21) while still not killing a fork whose user deleted the block
+    // by hand — pinned behaviorally against the real header below.
+    expect(setupRaw).toContain(String.raw`re.subn(r'# .*FORKERS READ THIS FIRST`);
     expect(setupRaw).toContain(String.raw`# .*END FORKER WARNING.*\n?`);
+    expect(setupRaw).toContain('FORKER warning block not found');
   });
 
   test('the rewritten file ends with exactly one newline', () => {
@@ -376,6 +382,136 @@ describe('setup.yml [vars] rewrite is line-anchored and key-aligned with the CLI
     // newline, so a [vars] section at EOF keeps its old `\n` outside the
     // match and a naive splice doubles it.
     expect(setupRaw).toContain(String.raw`out.rstrip('\n') + '\n'`);
+  });
+});
+
+describe('setup.yml python [vars] rewrite is value-aware (executes the real heredoc)', () => {
+  // v2.29.0 made the JS channel (rewriteWranglerVars) value-aware, but the
+  // workflow's python twin kept resetting every template key to blank. A
+  // re-run of Initialize AnvilWiki is a documented flow, and the reset was
+  // invisible: GITHUB_TOKEN PRs trigger no CI and the in-workflow build
+  // stays green because every consumer component is env-gated — the wipe
+  // only surfaced as a dead site after merge. These tests EXECUTE the
+  // heredoc the runner executes (extracted from the parsed YAML, so the
+  // de-indentation matches what the shell receives), not its source shape.
+  const extractVarsPython = (): string => {
+    const wf = readWorkflow(SETUP) as Workflow;
+    const step = wf.jobs?.setup?.steps?.find(
+      (s) => (s.run ?? '').includes("python3 - <<'EOF'") && (s.run ?? '').includes('wrangler.toml'),
+    );
+    expect(step, 'the [vars] python step not found — setup.yml rewritten?').toBeDefined();
+    const heredoc = step!.run!.match(/python3 - <<'EOF'\n([\s\S]*?)\nEOF/);
+    expect(heredoc, 'the [vars] python heredoc not found — step rewritten?').toBeTruthy();
+    return heredoc![1];
+  };
+
+  const runVarsRewrite = (
+    wrangler: string,
+    siteUrl = 'https://example.com',
+  ): { out: string; stderr: string } => {
+    const dir = mkdtempSync(join(tmpdir(), 'setup-vars-'));
+    try {
+      writeFileSync(join(dir, 'wrangler.toml'), wrangler);
+      writeFileSync(join(dir, 'rewrite.py'), extractVarsPython());
+      const res = spawnSync('python3', [join(dir, 'rewrite.py')], {
+        cwd: dir,
+        env: { ...process.env, RAW_SITE_URL: siteUrl },
+        encoding: 'utf8',
+      });
+      expect(res.status, `python rewrite failed:\n${res.stderr}`).toBe(0);
+      return { out: readFileSync(join(dir, 'wrangler.toml'), 'utf8'), stderr: res.stderr };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  // A fresh fork's [vars]: demo values everywhere, one empty commented slot.
+  const demoVars = [
+    '[vars]',
+    'SITE_URL = "https://anvil.wiki"',
+    '#INDEXNOW_KEY = "736d8608fdec899849d382dffdaf4dda78605ffe0f40e2f1dbb57c7390341bed"',
+    'PUBLIC_GISCUS_REPO = "PNGTRID/AnvilWiki"',
+    'PUBLIC_GISCUS_REPO_ID = "R_kgDOT1aRPQ"',
+    'PUBLIC_GISCUS_CATEGORY = "Announcements"',
+    'PUBLIC_GISCUS_CATEGORY_ID = "DIC_kwDOT1aRPc4DDODo"',
+    'PUBLIC_GISCUS_MAPPING = "pathname"',
+    'PUBLIC_CF_BEACON_TOKEN = ""',
+    '#PUBLIC_GA_ID = "G-X10CG7N6P6"',
+    'MY_CUSTOM_KEY = "keepme" # trailing comment',
+    '',
+  ].join('\n');
+
+  test('user values survive, demo values reset, unknown keys survive, SITE_URL follows input', () => {
+    // The four behaviors the JS channel has had since v2.29.0 — each one of
+    // them used to be a wipe or a reset in the python twin.
+    const { out } = runVarsRewrite(demoVars, 'https://mygame.wiki');
+    // Demo identity → reset (a FIRST run must clear it).
+    expect(out).toContain('SITE_URL = "https://mygame.wiki"');
+    expect(out).toContain('PUBLIC_GISCUS_REPO = ""');
+    expect(out).toContain('#INDEXNOW_KEY = ""');
+    expect(out).toContain('#PUBLIC_GA_ID = ""');
+    // User data → survives.
+    expect(out).toContain('MY_CUSTOM_KEY = "keepme" # trailing comment');
+  });
+
+  test('the paired-Announcements rule carries over (own name + own ID survives)', () => {
+    // "Announcements" is GitHub's suggested giscus category name — demo only
+    // when the demo category ID sits right next to it. Wiping the name while
+    // a fork's own ID survived would strand a half-reset giscus config.
+    const withOwnId = demoVars.replace(
+      'PUBLIC_GISCUS_CATEGORY_ID = "DIC_kwDOT1aRPc4DDODo"',
+      'PUBLIC_GISCUS_CATEGORY_ID = "R_myOwnId"',
+    );
+    const { out } = runVarsRewrite(withOwnId);
+    expect(out).toContain('PUBLIC_GISCUS_CATEGORY = "Announcements"');
+    expect(out).toContain('PUBLIC_GISCUS_CATEGORY_ID = "R_myOwnId"');
+  });
+
+  test('recognition covers single quotes, bare scalars and inline comments (JS-channel parity)', () => {
+    const handEdited =
+      '[vars]\nSITE_URL = "https://x.wiki"\nPUBLIC_GA_ID = G-123 # prod\nPUBLIC_CF_BEACON_TOKEN = \'literal\'\n';
+    const { out } = runVarsRewrite(handEdited);
+    // Preserved values are re-emitted double-quoted (Pages env vars are
+    // strings anyway), and a commented slot flips uncommented once a value
+    // exists — matching rewriteWranglerVars on these forms. (An unknown key
+    // with a single-quoted value is the round-21 verbatim-preservation path
+    // instead, pinned by 'custom [vars] keys are preserved verbatim'.)
+    expect(out).toContain('PUBLIC_GA_ID = "G-123"');
+    expect(out).toContain('PUBLIC_CF_BEACON_TOKEN = "literal"');
+  });
+
+  test("a second run on the first run's output is byte-identical (idempotent)", () => {
+    const first = runVarsRewrite(demoVars, 'https://mygame.wiki').out;
+    expect(runVarsRewrite(first, 'https://mygame.wiki').out).toBe(first);
+  });
+
+  test('the hardcoded DEMO_VALUES set mirrors the JS registry (DEMO_VAR_VALUES)', async () => {
+    // The python block cannot import the TS registry, so it carries a
+    // hardcoded copy — this guard is what keeps the copy honest.
+    const { DEMO_VAR_VALUES } = (await import('../scripts/lib/apply-rewrites')) as {
+      DEMO_VAR_VALUES: readonly string[];
+    };
+    const body = extractVarsPython().match(/DEMO_VALUES = \{([\s\S]*?)\}/)?.[1];
+    expect(body, 'DEMO_VALUES set not found in the python block').toBeTruthy();
+    const pyValues = [...body!.matchAll(/'([^']+)'/g)].map((m) => m[1]).sort();
+    expect(pyValues).toEqual([...DEMO_VAR_VALUES].sort());
+  });
+
+  test('the FORKER warning block is actually removed (real-header fixture), and absence warns instead of failing', () => {
+    // Pinned against the REAL shipping header (authors.ts precedent): if the
+    // wrangler.toml anchors drift, this goes red instead of the workflow
+    // silently leaving a block that lies about the file still being demo.
+    const real = readFileSync(join(root, 'wrangler.toml'), 'utf8');
+    const header = real.slice(0, real.indexOf('END FORKER WARNING') + 'END FORKER WARNING'.length);
+    expect(header).toContain('FORKERS READ THIS FIRST');
+    const { out } = runVarsRewrite(`${header}\n\n${demoVars}`);
+    expect(out).not.toContain('FORKERS');
+    // Absence is warn-not-exit: a fork that deleted the block by hand must
+    // not have its re-run killed over a missing comment (the JS channel
+    // keeps going in the same situation).
+    const bare = runVarsRewrite(demoVars);
+    expect(bare.out).not.toContain('FORKERS');
+    expect(bare.stderr).toContain('FORKER warning block not found');
   });
 });
 
@@ -438,6 +574,21 @@ describe('freshness audit stays read-only', () => {
     expect(filterIdx).toBeGreaterThan(-1);
     expect(closeIdx).toBeGreaterThan(filterIdx);
     expect(raw).toContain('nothing closed');
+  });
+
+  test('a failed issue create fails the step (the issue is the only output)', () => {
+    // The old `|| echo "issue create failed (maybe no changes worth
+    // filing)"` described a case the empty-body guard above already exits
+    // on — all it swallowed was real breakage (API / rate limit / auth),
+    // and with the previous issue already closed the evergreen chain lost a
+    // week silently. Same loud ::warning:: channel as the no-previous-issue
+    // case above, and the step goes red.
+    const raw = readFileSync(join(root, AUDIT), 'utf8');
+    expect(raw).not.toContain('|| echo "issue create failed');
+    const createIdx = raw.indexOf('gh issue create');
+    const guardIdx = raw.indexOf('::warning::issue create failed');
+    expect(guardIdx, 'the create-failure ::warning:: guard is gone').toBeGreaterThan(createIdx);
+    expect(raw.slice(guardIdx, guardIdx + 200)).toContain('exit 1');
   });
 });
 

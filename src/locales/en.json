@@ -119,6 +119,7 @@
     "feedbackYes": "Yes",
     "feedbackNo": "No",
     "breadcrumbAria": "Breadcrumb",
+    "wikiNavAria": "Wiki navigation",
     "paginationAria": "Article pagination"
   },
   "overview": {
@@ -223,18 +224,18 @@
           "displayType": "badge-list",
           "highlights": [
             {
-              "label": "FORGE-2026",
-              "detail": "+500 Gold · expires Aug 31",
-              "badge": "Active"
-            },
-            {
-              "label": "EMBERBORN",
-              "detail": "2× XP (30 min) · expires Aug 31",
+              "label": "EMBERFALL-2026",
+              "detail": "+400 Gold · expires Sep 30",
               "badge": "Active"
             },
             {
               "label": "ASHENKEEP",
               "detail": "Ashen Keep cosmetic set",
+              "badge": "Active"
+            },
+            {
+              "label": "NEWPLAYER",
+              "detail": "Starter bundle (new accounts)",
               "badge": "Active"
             }
           ]

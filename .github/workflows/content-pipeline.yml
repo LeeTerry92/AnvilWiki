@@ -82,7 +82,14 @@ jobs:
             echo "Audit produced no report body — skipping issue creation."
             exit 0
           fi
+          # The issue IS this workflow's only output, so a create failure
+          # (API / rate limit / auth) must fail the step. The old `|| echo`
+          # rationale ("maybe no changes worth filing") described a case the
+          # empty-body guard above already exits on — all it actually
+          # swallowed was real breakage, and with the previous issue already
+          # closed the evergreen chain silently lost a week. Same loud
+          # ::warning:: channel as the no-previous-issue case above.
           gh issue create \
             --title "Content freshness audit — $(date +%F)" \
             --body "$BODY" \
-            || echo "issue create failed (maybe no changes worth filing)"
+            || { echo "::warning::issue create failed — this week's audit issue is missing"; exit 1; }

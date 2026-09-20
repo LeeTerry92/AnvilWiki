@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { OpsError } from '../core/errors.js';
+import { submitLockPath } from '../core/gitops.js';
+import { loadSiteConfig } from '../core/site.js';
 
 export type OffloadMessage =
   | { kind: 'audit'; cwd: string }
@@ -61,6 +63,45 @@ export async function withWatchdog<T>(task: Promise<T>, timeoutMs: number, onTim
 }
 
 /**
+ * Path of the submit lock a timed-out submit may have left behind, phrased
+ * for the self-rescue instruction in watchdogTimeoutFix below. Resolves the
+ * site root the same way the worker's submit did (loadSiteConfig walks up
+ * from cwd), so the surfaced path is the exact file acquireSubmitLock
+ * created — a stale hint would send the user to delete a file that is not
+ * the lock.
+ */
+function leftoverSubmitLockPath(cwd: string): string {
+  try {
+    return submitLockPath(loadSiteConfig(cwd).root);
+  } catch {
+    return submitLockPath(cwd);
+  }
+}
+
+/**
+ * The fix text for a watchdog timeout, extracted as a pure function so the
+ * self-rescue guidance stays unit-testable (offload() itself cannot run
+ * under vitest — canOffload() is false in source form).
+ *
+ * Why the lock mention exists at all: worker.terminate() hard-kills the
+ * worker mid-submit, so submit's `finally` lock release never runs. Worker
+ * threads share the server process's pid, which is exactly what the lock's
+ * stale-owner probe checks — pidAlive stays true forever, so the "dead
+ * owner" reclaim never fires either, and for 30 minutes every retry reports
+ * "Another submit is already running" with the MCP server's own pid.
+ */
+export function watchdogTimeoutFix(kind: OffloadMessage['kind'], cwd: string): string {
+  const base =
+    'The underlying work may still have partially run in the repo — check for a leftover ops/submit-* branch before re-running.';
+  if (kind !== 'submit') return base;
+  return (
+    `${base} If a retry then reports "Another submit is already running" with this server's own pid, ` +
+    `the timeout left the submit lock behind (worker threads share the server's pid, so the stale-owner ` +
+    `probe cannot see it) — delete ${leftoverSubmitLockPath(cwd)} or restart this MCP server.`
+  );
+}
+
+/**
  * Run the spawn-heavy tools (audit / submit_pr) in a worker thread.
  *
  * Why: the core runs `pnpm build` etc. through spawnSync, which blocks the
@@ -113,7 +154,7 @@ export async function offload(msg: OffloadMessage): Promise<OffloadResult> {
     if (e instanceof WatchdogTimeout) {
       throw new OpsError(
         `The ${msg.kind} worker did not return within ${Math.round(OFFLOAD_TIMEOUT_MS / 60_000)} minutes and was terminated.`,
-        'The underlying work may still have partially run in the repo — check for a leftover ops/submit-* branch before re-running. If this recurs, run the equivalent CLI command (`anvil-ops audit` / `anvil-ops submit`) to see where it stalls.',
+        `${watchdogTimeoutFix(msg.kind, msg.cwd)} If this recurs, run the equivalent CLI command (\`anvil-ops audit\` / \`anvil-ops submit\`) to see where it stalls.`,
       );
     }
     throw e;

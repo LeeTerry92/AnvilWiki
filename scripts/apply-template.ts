@@ -48,6 +48,7 @@ import {
   DEMO_PUBLIC_FILES,
   isDemoPublicFileContent,
   buildLocaleLabels,
+  buildScaffoldDescription,
   buildUiImports,
   buildUiMessagesEntries,
   classifyWikiArticles,
@@ -478,7 +479,8 @@ function clearDemoAssets() {
 /**
  * After clearing demo content, drop one scaffold article per chosen category
  * (English) so the site builds and list pages aren't empty. The scaffold
- * passes schema validation (description ≥ 40 chars) out of the box.
+ * passes schema validation (description 40-165 chars, guarded for long
+ * category keys by buildScaffoldDescription) out of the box.
  */
 function scaffoldContent(categories: { key: string }[]): number {
   const enBase = path.resolve(ROOT, 'src/content/wiki/en');
@@ -498,7 +500,7 @@ function scaffoldContent(categories: { key: string }[]): number {
         file,
         `---
 title: "Getting Started with ${titleCase(key)} Guide"
-description: "A starter article for the ${key} category. Replace this scaffold with your real ${key} content — keep the description between 40 and 165 characters for SEO."
+description: "${buildScaffoldDescription(key)}"
 category: "${key}"
 date: ${todayIso()}
 tags: []
@@ -827,12 +829,35 @@ async function main() {
   // Copyright year comes from the shared local-date helper — the pure rewrite
   // layer takes it as a parameter (no hidden wall-clock reads at night-run hours).
   const copyrightYear = Number(todayIso().slice(0, 4));
+  // The DEFAULT locale ('en' — routing.ts's defaultLocale, which this CLI
+  // never rewrites) is rewritten FIRST: a brand-new locale file starts from
+  // en's REWRITTEN OUTPUT (the user's identity), never the demo en.json still
+  // on disk — cloning the disk file would leak the demo identity into the
+  // new locale. Without the clone the fresh file shipped a ~76-key-shorter
+  // skeleton (no $schema / search.* / shared.*) and turned the fork's first
+  // `check-i18n --strict-ui` run red. Computed up front rather than "first
+  // loop iteration" because check-i18n diffs against defaultLocale, not
+  // locales[0] — a "ja,en" answer would otherwise clone from ja.
+  const enPath = 'src/locales/en.json';
+  const enOutput = rewriteLocaleJson(
+    skinInput,
+    'en',
+    copyrightYear,
+    fs.existsSync(path.resolve(ROOT, enPath)) ? read(enPath) : undefined,
+  );
   for (const locale of uniqueLocales) {
     const localePath = `src/locales/${locale}.json`;
-    const existing = fs.existsSync(path.resolve(ROOT, localePath))
-      ? read(localePath)
-      : undefined;
-    write(localePath, rewriteLocaleJson(skinInput, locale, copyrightYear, existing));
+    if (locale === 'en') {
+      write(localePath, enOutput);
+    } else {
+      const existing = fs.existsSync(path.resolve(ROOT, localePath))
+        ? read(localePath)
+        : undefined;
+      write(
+        localePath,
+        rewriteLocaleJson(skinInput, locale, copyrightYear, existing, enOutput),
+      );
+    }
     if (!DRY_RUN) {
       // Ensure content dir exists for this locale.
       fs.mkdirSync(path.resolve(ROOT, 'src/content/wiki', locale), { recursive: true });

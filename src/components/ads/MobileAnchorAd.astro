@@ -59,6 +59,20 @@ const anchorCss = `
       padding-bottom: 62px;
       padding-bottom: calc(62px + env(safe-area-inset-bottom));
     }
+    /* BackToTop shares this bottom-right corner (fixed bottom-5 right-5
+       z-40, one layer above the z-30 bar) — with the bar revealed its ×
+       close button sits underneath and taps land on "back to top" instead
+       of "close ad" (~90% overlap at 375px). Lift the button above the bar
+       via the same body class the reveal/dismiss script toggles (zero new
+       JS): bar min-height 58px + the button's own 20px bottom-5 resting
+       offset = 78px. The env() term tracks the bar's own safe-area
+       padding-bottom so the gap stays constant on notched iPhones; plain
+       78px first keeps engines without env() compensated (same two-line
+       cascade as the body padding above). */
+    body.has-mobile-anchor #back-to-top {
+      bottom: 78px;
+      bottom: calc(78px + env(safe-area-inset-bottom));
+    }
   }
   /* iOS home-indicator safe area — bar content rides above it. */
   #mobile-anchor-ad {

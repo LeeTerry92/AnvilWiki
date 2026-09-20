@@ -119,6 +119,7 @@
     "feedbackYes": "はい",
     "feedbackNo": "いいえ",
     "breadcrumbAria": "パンくずリスト",
+    "wikiNavAria": "Wiki ナビゲーション",
     "paginationAria": "前後の記事"
   },
   "overview": {
@@ -223,19 +224,19 @@
           "displayType": "badge-list",
           "highlights": [
             {
-              "label": "FORGE-2026",
-              "detail": "コイン500 + 初心者用の剣",
-              "badge": "有効"
-            },
-            {
-              "label": "EMBERBORN",
-              "detail": "レアジェム1個",
+              "label": "EMBERFALL-2026",
+              "detail": "ゴールド400 · 有効期限 9月30日",
               "badge": "有効"
             },
             {
               "label": "ASHENKEEP",
-              "detail": "限定コスメ",
-              "badge": "近日期限切れ"
+              "detail": "Ashen Keep コスメセット",
+              "badge": "有効"
+            },
+            {
+              "label": "NEWPLAYER",
+              "detail": "スターターバンドル(新規アカウント)",
+              "badge": "有効"
             }
           ]
         },

@@ -15,8 +15,14 @@ import { homeUrl, tagPath, tagsPath } from '~/lib/url';
 interface Props {
   locale: Locale;
   alternates?: Array<{ hreflang: string; href: string }>;
+  /**
+   * Zero tags in this locale = thin empty state — noindex, same treatment
+   * as ListPage's empty category lists (page files compute the empty state
+   * per locale and pass it in).
+   */
+  noindex?: boolean;
 }
-const { locale, alternates = [] } = Astro.props;
+const { locale, alternates = [], noindex = false } = Astro.props;
 const ui = getUi(locale);
 const nav = ui.nav;
 const shared = ui.shared;
@@ -35,10 +41,11 @@ const jsonLd = simpleBreadcrumbJsonLd({ pageLabel: title, path: tagsPath(locale)
   description={description}
   alternates={alternates}
   jsonLd={[jsonLd]}
+  noindex={noindex}
 >
   <div class="space-y-6">
     <header>
-      <nav class="text-sm text-muted-foreground" aria-label="breadcrumb">
+      <nav class="text-sm text-muted-foreground" aria-label={shared.breadcrumbAria ?? 'Breadcrumb'}>
         <a href={homeUrl(locale)} class="hover:text-nav">{nav.home}</a>
         <span class="mx-1">/</span>
         <span class="text-foreground">{title}</span>

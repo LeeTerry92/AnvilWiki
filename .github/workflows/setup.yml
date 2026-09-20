@@ -4,8 +4,9 @@
 # Safe-to-automate, non-interactive steps only:
 #   1. Reset wrangler.toml [vars] to your domain (SITE_URL) + clear demo Giscus values
 #   2. Remove the project landing page (fork users don't need it)
-#   3. Optionally clear ALL wiki articles (default: yes — the demo game's
-#      articles now; YOUR OWN articles if you ever re-run after publishing)
+#   3. Optionally clear demo wiki articles (default: yes — content-aware:
+#      demo-marked articles are deleted; YOUR OWN articles survive a re-run
+#      and are reported one by one)
 #   4. Open a PR with the changes for you to review
 #
 # What this does NOT do (run `pnpm apply-template` locally for these):
@@ -23,7 +24,7 @@ on:
         required: true
         default: 'https://your-domain.wiki'
       clear_demo_content:
-        description: 'Delete ALL wiki articles under src/content/wiki (the demo game now; YOUR OWN articles if you re-run after publishing)'
+        description: 'Delete demo-marked wiki articles under src/content/wiki (your own articles survive a re-run and are reported one by one)'
         required: false
         default: 'true'
 
@@ -137,6 +138,81 @@ jobs:
                   print(f'⚠️ [vars] key "{km.group(1)}" is not part of the template — preserved verbatim at the end of the section.', file=sys.stderr)
           if custom:
               new_vars += '\n\n# Custom [vars] keys the template does not know are preserved verbatim.\n' + '\n'.join(custom)
+          # Value-aware preservation — parity with the JS channel's
+          # rewriteWranglerVars (scripts/lib/apply-rewrites.ts, v2.29.0).
+          # Re-running this workflow is a documented flow, and the old
+          # blank-template reset silently wiped every env the user had
+          # already filled (Giscus / GA / Adsterra / CF beacon / INDEXNOW_KEY).
+          # A GITHUB_TOKEN PR triggers no CI and the in-workflow build stays
+          # green anyway (every component is env-gated), so the wipe only
+          # surfaced as a dead site after merge. Non-empty values that are
+          # not known demo values are USER data and are carried into the
+          # rewritten block; SITE_URL is this workflow's entire input and
+          # always follows it.
+          DEMO_VALUES = {
+              # MIRROR of DEMO_VAR_VALUES in scripts/lib/apply-rewrites.ts —
+              # on the FIRST run [vars] still carries the demo config, which
+              # must reset. The set is pinned against the registry by
+              # tests/workflows.test.ts so the two channels cannot drift.
+              'https://anvil.wiki',
+              'https://anvilwiki.pages.dev',
+              'PNGTRID/AnvilWiki',
+              'R_kgDOT1aRPQ',
+              'DIC_kwDOT1aRPc4DDODo',
+              '72f65aae2e14988904cffe17cfe697e2',
+              'e0dce7760389a360cba34b93333ea2d0',
+              '8fabf9ea9ed2d89cba2ff9888f939c26',
+              '89fabda9f10bc13544cae84f0211d77c',
+              'fba4ed072bed8749c56ebcf099b30f0e',
+              'e2ad36227bacdad94a4bfe6a9a6d3dac',
+              'G-X10CG7N6P6',
+              '736d8608fdec899849d382dffdaf4dda78605ffe0f40e2f1dbb57c7390341bed',
+          }
+          # Same accepted value forms as the JS channel: double-quoted
+          # (escape-aware), single-quoted literal, bare scalar, each with an
+          # optional trailing comment. Commented `#KEY = ""` placeholders
+          # hold no value and never participate in preservation.
+          existing = {}
+          for ln in s[m.start():m.end()].splitlines():
+              vm = re.match(
+                  r"""^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:"((?:\\.|[^"\\])*)"|'([^']*)'|([^#\s][^#]*?))\s*(?:#.*)?$""",
+                  ln,
+              )
+              if vm:
+                  val = vm.group(2)
+                  if val is None:
+                      val = vm.group(3)
+                  if val is None:
+                      val = vm.group(4)
+                  existing[vm.group(1)] = val
+          keep = {}
+          for key, val in existing.items():
+              if key == 'SITE_URL' or key not in TEMPLATE_KEYS or val == '':
+                  continue
+              demo = val in DEMO_VALUES
+              # Same paired rule as isDemoVarValue: "Announcements" is
+              # GitHub's suggested giscus category name — demo only when the
+              # demo category ID sits right next to it, so a fork that chose
+              # the same name with its own ID keeps its value (wiping the
+              # name while the ID survived would strand a half-reset config).
+              if key == 'PUBLIC_GISCUS_CATEGORY' and val == 'Announcements':
+                  demo = existing.get('PUBLIC_GISCUS_CATEGORY_ID') == 'DIC_kwDOT1aRPc4DDODo'
+              if not demo:
+                  keep[key] = val
+          def toml_str(v):
+              # Mirror the JS tomlStr: backslash first, then quote. Values
+              # come from already-valid TOML lines, so this round-trips.
+              return v.replace('\\', '\\\\').replace('"', '\\"')
+          for key, val in keep.items():
+              line_re = re.compile(r'^[ \t]*#?' + re.escape(key) + r'\s*=.*$', re.MULTILINE)
+              # Function replacement (lambda): a str replacement would treat
+              # backslashes in the preserved value as escapes — the same trap
+              # the splice below avoids with plain string slicing.
+              new_vars, n_kept = line_re.subn(
+                  lambda _m, k=key, v=val: f'{k} = "{toml_str(v)}"', new_vars, count=1
+              )
+              if n_kept == 0:
+                  raise SystemExit(f'❌ [vars] template line for "{key}" not found — template drift?')
           # Plain string splicing, NOT re.subn: the replacement embeds the
           # user-supplied URL, and re.subn treats backslashes in a replacement
           # as escapes (a trailing `\` → re.error). search + slicing keeps the
@@ -147,7 +223,14 @@ jobs:
           # JS channel removes it too). ASCII anchors only — python's `.` skips
           # newlines exactly like JS's, so the heading's ⚠️ emoji is covered
           # by `.*` and no multi-codepoint quantifier trap applies.
-          out = re.sub(r'# .*FORKERS READ THIS FIRST[\s\S]*?# .*END FORKER WARNING.*\n?', '', out)
+          out, n_forker = re.subn(r'# .*FORKERS READ THIS FIRST[\s\S]*?# .*END FORKER WARNING.*\n?', '', out)
+          if n_forker == 0:
+              # Warn, don't exit: a fork that already deleted the warning by
+              # hand must not have its re-run killed over a missing comment
+              # (the JS channel keeps going in the same situation). But a
+              # reworded anchor must not silently no-op either — a leftover
+              # block would claim the file still carries the DEMO config.
+              print('⚠️ FORKER warning block not found in wrangler.toml — nothing removed (template drift, or already deleted).', file=sys.stderr)
           # End with exactly one newline: python's `$` (without re.M) also
           # matches just BEFORE a trailing newline, so a [vars] section at EOF
           # keeps its old `\n` outside the match and the splice can double it.

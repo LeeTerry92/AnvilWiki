@@ -266,7 +266,7 @@ check(() => {
 // ---------------------------------------------------------------------------
 // 4. Reskin leftovers
 // ---------------------------------------------------------------------------
-console.log('\n4. 换皮残留（demo 图片资产 + public/ demo 文件 + wrangler.toml demo 值）');
+console.log('\n4. 换皮残留（demo 图片资产 + public/ demo 文件 + wrangler.toml demo 值 + 不实承诺措辞）');
 
 check(() => {
   const found: string[] = [];
@@ -333,6 +333,24 @@ check(() => {
     warn(`demo article content still present — ${found.length} file${found.length === 1 ? '' : 's'} still reference the demo game: ${found.slice(0, 8).join(', ')}${found.length > 8 ? ' …' : ''}. Expected on the demo repo; on a fork it means the content layer wasn't replaced (apply-template "Clear demo content").`);
   } else {
     ok('no demo articles in src/content/wiki/');
+  }
+});
+
+check(() => {
+  // Phrase-level rebrand leftover (v2.6.0 ruled "Updated daily by the
+  // community" a promise the template can't keep and purged it from
+  // en/ja.json — site.ts still hid one in the config layer until round 22).
+  // Layer-agnostic scan of ALL of src/**: the promise is a demo leftover
+  // wherever it renders, not in just one layer.
+  const found = walkFiles(path.resolve(ROOT, 'src'), {
+    exts: ['.astro', '.ts', '.tsx', '.js', '.mjs', '.json', '.mdx', '.md'],
+  })
+    .map(REL)
+    .filter((rel) => read(rel).toLowerCase().includes('updated daily by the community'));
+  if (found.length > 0) {
+    warn(`unkeepable demo promise "Updated daily by the community" still present in ${found.length} file${found.length === 1 ? '' : 's'}: ${found.join(', ')} — never claim an update cadence you can't honor; write what you actually keep current (v2.6.0).`);
+  } else {
+    ok('no "Updated daily by the community" promise anywhere in src/');
   }
 });
 

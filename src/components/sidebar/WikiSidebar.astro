@@ -30,12 +30,13 @@ interface Props {
 const { locale, currentPath = '', compact = false } = Astro.props;
 const ui = getUi(locale);
 const nav = ui.nav as Record<string, string>;
+const shared = ui.shared;
 const groups = await getDynamicNavigation(locale, nav);
 ---
 <div class="space-y-6">
     <div class="max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
     {/* Wiki navigation */}
-    <nav aria-label="Wiki navigation">
+    <nav aria-label={shared.wikiNavAria ?? 'Wiki navigation'}>
       <h2 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {site.shortName}
       </h2>

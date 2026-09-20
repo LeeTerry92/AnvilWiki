@@ -49,7 +49,17 @@ const err = (msg: string) => {
 // 1. Parse navigation.ts keys
 // ---------------------------------------------------------------------------
 const navSrc = read('src/config/navigation.ts');
-const navKeys = Array.from(navSrc.matchAll(/key: '([^']+)'/g)).map((m) => m[1]);
+// Both quote styles (template-audit.ts parses this same file the same way):
+// a fork reformatting navigation.ts to double quotes must not silently
+// disable every nav-dimension check below.
+const navKeys = Array.from(navSrc.matchAll(/key:\s*['"]([^'"]+)['"]/g)).map((m) => m[1]);
+if (navKeys.length === 0) {
+  // Same bargain as the routing.ts readers in lib/routing-flags.ts: a parse
+  // failure must be loud — gating nothing while printing green is worse than
+  // stopping.
+  err('could not parse any nav keys from src/config/navigation.ts — expected `key: \'category\'` entries in NAVIGATION_CONFIG');
+  process.exit(1);
+}
 
 // ---------------------------------------------------------------------------
 // 2. Parse routing.ts locales (shared reader in scripts/lib/routing-flags.ts)

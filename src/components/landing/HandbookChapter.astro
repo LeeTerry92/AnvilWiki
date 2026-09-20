@@ -59,7 +59,7 @@ const updated = chapter.data.updated?.toLocaleDateString(locale === 'zh' ? 'zh-C
       <!-- Breadcrumb: docs hub → manual → chapter -->
       <nav
         data-pagefind-ignore
-        aria-label="Breadcrumb"
+        aria-label={t.handbook.backToHub}
         class="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
       >
         <a href={handbookPath(locale, '', true)} class="transition hover:text-nav">

@@ -16,6 +16,11 @@
  *      page (Aniimo shipped 177 such links before noticing).
  *   6. Fewer than 3 internal links in a body → warning (orphan-ish page:
  *      no internal links = no crawl paths, no PageRank flow).
+ *   7. Frontmatter `category` must equal the path's directory segment —
+ *      the URL is derived from the path while JSON-LD / prev-next derive
+ *      from frontmatter, so a mismatch renders fine but ships structured
+ *      data pointing at URLs that 404 (check-links can't see it: the page
+ *      itself resolves).
  *
  * Style: warnings don't fail the build; errors exit 1 (can gate CI).
  *
@@ -126,6 +131,26 @@ for (const file of files) {
   // page: no crawl paths, no PageRank flow — Aniimo shipped 54/56 like that).
   if (internalLinkCount < 3) {
     warn(file, bodyStart, `only ${internalLinkCount} internal link(s) in body — aim for ≥3`);
+  }
+
+  // 7. Frontmatter category must equal the directory segment. Nothing else
+  // compares the two (Zod validates the value, check-config the directory):
+  // an article in bosses/ declaring category: guides renders at /bosses/…
+  // while JSON-LD and prev-next follow frontmatter — structured data that
+  // points at URLs no sitemap knows.
+  if (secondFm !== -1) {
+    const catIdx = lines.slice(0, secondFm).findIndex((l) => /^category:/.test(l));
+    if (catIdx !== -1) {
+      const fmCategory = lines[catIdx].match(/^category:\s*['"]?([\w-]+)/)?.[1];
+      const dirCategory = path.relative(BASE, file).split(path.sep)[1];
+      if (fmCategory && dirCategory && fmCategory !== dirCategory) {
+        error(
+          file,
+          catIdx,
+          `frontmatter category "${fmCategory}" ≠ directory "${dirCategory}" — the URL follows the directory but JSON-LD/prev-next follow frontmatter`,
+        );
+      }
+    }
   }
 }
 

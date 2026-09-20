@@ -12,7 +12,11 @@ for (const rel of DEMO_PUBLIC_FILES) {
   if (!fs.existsSync(file)) continue;
   const source = fs.readFileSync(file, 'utf8');
   if (!isDemoPublicFileContent(rel, source)) continue;
-  console.log(`🗑️  demo public file: public/${rel}`);
+  // stderr, like clear-demo-content.ts's deletion line: a deletion is a
+  // decision the operator must see even when stdout is piped/quiet (round 21
+  // fixed the twin script; this one deletes the MORE sensitive files — GSC
+  // token / IndexNow key — so it gets the same treatment).
+  console.warn(`🗑️  demo public file: public/${rel}`);
   if (!DRY_RUN) fs.unlinkSync(file);
   removed++;
 }

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **setup.yml 的 [vars] python 通道升级为值感知**（第三次三维代码审查高-1；JS 通道 v2.29.0 同类洞的残留，两审查代理独立命中）：原实现把整个 `[vars]` 段替换为空白模板、只有模板外未知键保留——fork 用户填好的 Giscus/GA/Adsterra/CF beacon/INDEXNOW_KEY 在重跑 Initialize（工作流自己宣传的流程）时被静默清空，且 GITHUB_TOKEN PR 不触发 CI、workflow 内 build 因组件 env 门控照常绿，合并即评论/统计/广告静默熄火。现按 JS 通道 `rewriteWranglerVars` 同口径解析现值（双引号含转义/单引号/裸标量/行尾注释；注释态槽位有值时翻正），非空且非 demo 值原样回填，SITE_URL 恒随输入；JS 通道的 Giscus 'Announcements' 配对规则一并折入（防首跑半残配置）。python 内 demo 值集合标注为 `DEMO_VAR_VALUES` 镜像，`tests/workflows.test.ts` 新增行为级契约（真执行 python3：用户值存活/demo 值重置/未知键存活/二跑字节幂等）+ 双通道 demo 值漂移守卫（import 注册表比对硬编码集合）。
+- **apply-template 为新选语言写出的 locale JSON 不再缺 76 个 UI 键**（高-2）：原 `rewriteLocaleJson` 对磁盘不存在的 locale 从 `{}` 起步只重建 site/footer/nav/overview/home，fork 选任何非 en/ja 语言后首次 CI 的 `check-i18n --strict-ui` 必红 76 个 missing（`$schema`+`search.*`+`shared.*`）；姊妹脚本 new-locale.ts 整份克隆行为相反。现以默认语言（'en'，恒为首个处理）**重写完成后**的输出为克隆基底（杜绝 demo 身份泄漏），reset 幂等地覆盖身份命名空间；footer `playGame` 加入 reset 面（demo 的 "Play Anvil Quest" 原会经克隆链泄漏进每个新 locale）。`tests/apply-template.test.ts` 新增克隆契约（键集 parity=strict-ui 等价/零 demo 身份串/nav·overview 按所选分类）。
+- **demo 首页 codes 高亮与 codes 页 frontmatter 对齐**（中-2 数据面，en/ja 双语）：en.json 把已过期（frontmatter `status: expired`，Aug 31）的 FORGE-2026/EMBERBORN 标 badge "Active" 渲染上生产首页，与「codes 自动保鲜」卖点直接打脸；ja 侧漂移更重（reward 文案与 codes 页互不一致、ASHENKEEP 反标「近日期限切れ」）。现两语言统一换成当前三个真实 active 码（EMBERFALL-2026/ASHENKEEP/NEWPLAYER），reward 与 expiry 逐字取自各语言 codes 页 frontmatter。
+- **site.ts 的 description 改为诚实口径**（中-3）：v2.6.0 判定「Updated daily by the community」不实并修了 en/ja.json，但 site.ts 这个第二站点描述源漏网至今，经 Organization/WebSite JSON-LD、RSS、llms.txt、HomePage meta 四消费面散发。现与 en.json `site.description` 逐字一致（"Every guide carries a last-verified date"）。
+- **aria-label 硬编码英文清零**（低-6）：ListPage/TagListPage/RecentPage/TagsIndexPage 面包屑改 `shared.breadcrumbAria`（ArticlePage 先例的补全）、WikiSidebar 改新增的 `shared.wikiNavAria`（en/ja 同位镜像键）、HandbookChapter/HandbookManualList 改用既有可见标题文本（零新键）。ja 读屏不再播英文。
+- **空 `/recent/` `/tags/` 页空态 noindex**（低-3）：四个页面文件按各 locale 空态传入 noindex（RecentPage/TagsIndexPage 补 prop，LocaleLayout→BaseLayout 既有透传链零改动），对齐空分类薄内容治理与 ListPage 先例；sitemap 侧排除有意不做（页面侧 noindex 已消除矛盾信号）。
+- **astro.config sitemap/草稿判定两处加固**（中-5/低-1）：`filter` 的裸 `decodeURIComponent` 对裸 `%` slug（`100%-off.mdx`）抛 URIError 炸整个 build——抽 `decodeSitemapPath` 安全 helper 与 `serialize` 共用（解码失败保留原始 pathname，消除防御不对称）；draft/noindex 正则放宽容忍 YAML 行内注释（`draft: true # 待核实` js-yaml 解析为 true 但旧正则不匹配 → lastmod 仍进 sitemap），`[ \t]` 而非 `\s` 防 `#` 吞换行跨行误配。
+- **per-article noindex 的语言版本退出详情级 hreflang**（低-2，实现为两表裁决）：`buildLastmodMap` 拆 `localeCoverage`（含 noindex，继续喂 `fallbackDetailPaths`——否则 noindex 英文文章的 /ja/ fallback 变体会漏回 sitemap，v2.27.0 回归）与 `detailCoverage`（剔 noindex，喂详情 alternates）；页面侧 `localesForEntry` 同规则。categoryCoverage 有意不动（分类列表页本身可索引）。
+
+### Added
+
+- **check-content 新增规则 7（error 级）：frontmatter `category` 必须等于文件目录段**（中-4）——原全链路（zod 管 frontmatter/audit 管目录∈nav）无人比对二者相等，错位时 URL 按目录、JSON-LD/prev-next 按 frontmatter 静默指向 404 且 check-links 扫不到 JSON-LD。
+- **refresh-audit 新增首页高亮 ↔ codes 页对账**（中-2 门禁半边）：`home.explore` badge-list 高亮与同语言 codes 页 frontmatter 逐码比对（frontmatter expired 而 badge 非过期词汇 → P0；label 不在 codes 页时退化为 detail 日期检查，保守偏置防误报）——本批数据修复前该矛盾三道既有门禁全绿灯。
+- **template-audit 换皮残留扫描新增不实承诺措辞标记**（中-3 防复发）：`updated daily by the community` 全 src/** 大小写不敏感扫描（⚠️ 不改 exit 0）。
+- **E2E 补 `check-i18n --strict-ui` 步骤**（e2e-apply-template.mjs）：E2E 此前只跑 check-config——「仅 fork 特定输入触发」类门禁红（如高-2 的 76 缺键）全在盲区，本批高-2 修复恰好被该步骤端到端覆盖（answers 选 zh 走克隆路径）。
+- **changelog.test.ts 新增版本钉**（低-12）：`PROJECT_VERSION`（landing-shared.ts）必须等于 package.json `version`——版本五处同步从纯手工清单升为门禁（对齐 changelog/agents-consistency 两个「事故→门禁」先例）。
+- **`shared.wikiNavAria` UI 键**（en/ja 同位镜像）。
+
+### Fixed
+
+- **移动端文章页 BackToTop 遮挡 Adsterra 锚条关闭钮**（中-1）：`bottom-5 right-5 z-40` 的回到顶部按钮与 `z-30` 锚条右上角 × 坐标重叠约 90%（375px 视口实测），点「关闭广告」实际触发回到顶部、锚条永不消失——v2.28.0 锚条上线时未与既有 BackToTop 做坐标协调。现锚条 reveal 时经既有 `has-mobile-anchor` body class 把按钮上移到条上方（`bottom: 78px` + env(safe-area-inset-bottom) 双行级联，与同文件既有 env() 降级写法一致），零新 JS，零广告 fork 不受影响。
+- **apply-template 脚手架 description 分类 key ≥11 字符时超 schema 上限**（中-6）：硬编码模板串长度=144+2×len(key)，`walkthrough` 即超 `z.string().max(165)`——CLI 全程 ✅、fork 首次 build 才炸且报在用户没写过的 getting-started.mdx 上。新纯函数 `buildScaffoldDescription`（len(key)=30 仍 ≤165，超长回落固定短句），对齐 bulk-new-posts 既有防御。
+- **buildHomePreset 首页预设写死死链**（中-7）：codes 预设写死 `/codes` `/bosses`、guides 预设写死 `/guides`，用户所选分类不含对应 key 时首页死链、fork CI check-links 红（popular 预设的动态写法是同文件内正确参照）。现确定性归一：首选 key 不在 cats 时替换为未占用的真实 key 并 stderr ⚠️。
+- **check-config navKeys 解析加固**（低-9）：正则只收单引号（手改双引号的 fork 门禁对 nav 维度静默失效）→ 放宽 `['"]` 与 template-audit 同款；解析结果为空从真空 ✅ 改为 error 退出（对齐全仓「解析失败必须响亮」契约）。
+- **其余低级修复**：llms.txt 排序锚定 `defaultLocale`（低-4，构建机 ICU 漂移，同 content.ts:191 先例）与三个项目页条目移出 `## Handbook` 组（低-10，新增 `## Project pages`）；rewriteLocaleJson 损坏 JSON 从静默重建改 ⚠️ 告警（低-7，对齐「读不出绝不改」哲学）；clear-demo-public 删除行改 stderr 与孪生脚本对齐（低-8）；i18n-smoke 从 4 文件白名单改目录遍历+数量 sanity（低-11，新增 locale 路由文件不再漏扫描）；ListPage 描述兜底链删除永不可达尾项、空串真正回落标题（低-5）；content-pipeline.yml `gh issue create || echo` 改 `::warning::`+exit 1（低-13，evergreen 审计链断链不再无声）；setup.yml FORKER 块 `re.sub` 改 `re.subn` count==0 时 stderr ⚠️（低-15）+ clear_demo_content 输入描述改为如实表述「你的文章重跑会被保留」（低-16，v2.25.1 content-aware 行为的对齐）；anvil-ops MCP submit watchdog 超时文案补锁自救指引（超时遗留锁删除路径，worker 同 pid 陈主探测不可见）。
+
 ## [2.34.0] — 2026-09-20
 
 ### Changed

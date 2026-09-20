@@ -3,7 +3,8 @@
  *
  * Extracted (verbatim where possible) so vitest can test them without
  * importing the interactive CLI: rewriteSiteTs (site.ts object literal),
- * rewriteLocaleJson (locale JSON shapes), rewriteWranglerVars (wrangler.toml
+ * rewriteLocaleJson (locale JSON shapes), buildScaffoldDescription (scaffold
+ * frontmatter), rewriteWranglerVars (wrangler.toml
  * [vars] reset), the demo asset inventories shared with the "Clear demo
  * content" step in .github/workflows/setup.yml, and the content-aware demo
  * locale check. No fs/path access — callers own all IO.
@@ -19,6 +20,24 @@ export function slugify(s: string): string {
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+
+/**
+ * Frontmatter description for the per-category scaffold article
+ * (apply-template's scaffoldContent). The placeholder must itself satisfy
+ * the content schema (z.string().min(40).max(165)) — the old keyed template
+ * grew 2×len(key) past a 144-char base, so a category key like
+ * "walkthrough" (11 chars) already exceeded 165 and failed the fork's FIRST
+ * build (drafts are schema-validated too). Same defense as bulk-new-posts:
+ * the keyed variant while it fits (safe up to a 56-char key), a fixed
+ * no-key sentence otherwise — never out of the [40, 165] window.
+ */
+export function buildScaffoldDescription(key: string): string {
+  const withKey = `A starter article for the ${key} category. Replace this scaffold description (40-165 characters) before publishing.`;
+  return withKey.length <= 165
+    ? withKey
+    : 'A starter article for this category. Replace this scaffold description (40-165 characters) before publishing.';
 }
 
 
@@ -145,13 +164,41 @@ export interface SkinInput {
 /**
  * Build a starter `home` namespace skeleton for a preset.
  * All copy uses the game name the user entered — placeholders to refine,
- * not demo-game leftovers. Module hrefs point at the categories they chose.
+ * not demo-game leftovers. Module hrefs point at the categories they chose;
+ * a fixed slot whose expected category was not picked substitutes a chosen
+ * one (warn on stderr) instead of writing a dead link.
  */
 function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
   if (input.homePreset === 'keep') return null;
   const cats = input.categories.map((c) => c.key);
   const first = cats[0] ?? 'guides';
   const cap = (c: string) => c[0].toUpperCase() + c.slice(1);
+
+  // Preset slots carry fixed editorial ideas ("codes first, then bosses").
+  // When the user did not choose that category, the literal href used to be
+  // written anyway — a dead link on the homepage that reddened the fork's
+  // first `check-links` run (popular.quickLinks was always dynamic via
+  // cats.slice; this extends the same care to the fixed slots). Substitute
+  // the first chosen category not yet claimed by an earlier slot
+  // (deterministic: cats order), falling back to the first category, then to
+  // the literal href when no categories exist at all (the CLI already warns
+  // about that tree separately). Each real substitution warns on stderr; the
+  // copy around it stays the user-editable placeholder it always was.
+  const claimed: string[] = [];
+  const pickHref = (preferred: string): string => {
+    if (cats.includes(preferred)) {
+      if (!claimed.includes(preferred)) claimed.push(preferred);
+      return `/${preferred}`;
+    }
+    const actual = cats.find((c) => !claimed.includes(c)) ?? cats[0] ?? preferred;
+    if (actual !== preferred) {
+      claimed.push(actual);
+      console.warn(
+        `⚠️ home preset expects the "${preferred}" category but it was not chosen — substituted "${actual}". Edit the home hrefs in the locale JSON to taste.`,
+      );
+    }
+    return `/${actual}`;
+  };
 
   // Field shapes MUST match what the home components render (HomePage reads
   // meta.title/meta.description, CTA fields are plain strings rendered as link
@@ -193,9 +240,9 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
         badge: 'Quick start',
         title: 'Jump straight in',
         cards: [
-          { number: '1', title: 'Codes', description: 'Free gold, XP, cosmetics', icon: 'lucide:gift', href: '/codes' },
-          { number: '2', title: 'Bosses', description: 'Phase-by-phase strategy', icon: 'lucide:swords', href: '/bosses' },
-          { number: '3', title: 'Tier list', description: 'Best weapons ranked', icon: 'lucide:bar-chart-3', href: `/${cats.find((c) => c !== 'codes') ?? first}` },
+          { number: '1', title: 'Codes', description: 'Free gold, XP, cosmetics', icon: 'lucide:gift', href: pickHref('codes') },
+          { number: '2', title: 'Bosses', description: 'Phase-by-phase strategy', icon: 'lucide:swords', href: pickHref('bosses') },
+          { number: '3', title: 'Tier list', description: 'Best weapons ranked', icon: 'lucide:bar-chart-3', href: pickHref(cats.find((c) => !claimed.includes(c)) ?? first) },
         ],
       },
       explore: {
@@ -206,7 +253,7 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
             order: 1,
             name: 'Active codes',
             description: 'Redeem before they expire',
-            href: '/codes',
+            href: pickHref('codes'),
             displayType: 'badge-list',
             highlights: [
               { label: 'CODE-PLACEHOLDER', detail: 'Tap to copy on the codes page', badge: 'NEW' },
@@ -247,7 +294,7 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
           order: 1,
           name: 'Getting started',
           description: 'Step-by-step progression',
-          href: '/guides',
+          href: pickHref('guides'),
           displayType: 'steps',
           highlights: [
             { label: 'Step 1', detail: 'Finish the tutorial', badge: '5 min' },
@@ -428,19 +475,46 @@ export function rerunPromptDefaults(id: SiteTsIdentity): PromptDefaults {
  * in by the caller (apply-template derives it from lib/today.ts) — this layer
  * stays pure, with no hidden dependency on the wall clock (a night run must
  * not stamp a different year than the CLI reported).
+ *
+ * `cloneBase` is the DEFAULT locale's just-rewritten output, passed by the
+ * CLI when `existing` is undefined (a brand-new locale file): the clone
+ * contributes the namespaces this rewrite does not own ($schema, search.*,
+ * shared.*, the rest of footer) so the new file passes the fork's first
+ * `check-i18n --strict-ui` run — new-locale.ts's whole-file en→<locale>
+ * clone is the reference behavior, and without it the fresh file shipped a
+ * ~76-key-shorter skeleton. It must be the REWRITTEN OUTPUT (the user's
+ * identity), never the demo en.json still on disk. The resets below re-cover
+ * site / footer.copyrightText / footer.playGame / nav / overview / home, so
+ * the overlap is idempotent; when `existing` exists it always wins — a
+ * re-run must never clobber the user's translations with the clone.
  */
 export function rewriteLocaleJson(
   input: SkinInput,
-  _locale: string,
+  locale: string,
   copyrightYear: number,
   existing?: string,
+  cloneBase?: string,
 ): string {
-  // Start from existing (if any) or a minimal skeleton; reset site/footer/nav/overview.
+  // Start from existing (if any), else the clone base (new file), else a
+  // minimal skeleton; reset site/footer/nav/overview.
   let obj: Record<string, unknown> = {};
   if (existing) {
     try {
       obj = JSON.parse(existing);
     } catch {
+      // Same philosophy as isDemoLocaleContent's never-delete-unreadable:
+      // rebuilding is the only way forward, but it must never be SILENT — a
+      // hand-edited file losing every key the user added is the destructive
+      // direction. stderr, like every other warn in this lib.
+      console.warn(`⚠️ existing ${locale}.json is not valid JSON — rebuilt from skeleton`);
+      obj = {};
+    }
+  } else if (cloneBase) {
+    try {
+      obj = JSON.parse(cloneBase);
+    } catch {
+      // cloneBase is this function's own JSON.stringify output (always
+      // valid); the catch only guards a caller passing garbage.
       obj = {};
     }
   }
@@ -454,6 +528,12 @@ export function rewriteLocaleJson(
   };
   obj.footer = obj.footer ?? {};
   (obj.footer as Record<string, unknown>).copyrightText = `© ${copyrightYear} ${input.gameName} Wiki. All rights reserved.`;
+  // playGame carries the game name ("Play Anvil Quest" in the demo JSON) —
+  // left as-is it survives the reset and rides the clone into every fresh
+  // locale, leaking the demo identity past the zero-demo-strings contract.
+  // Like copyrightText it is game-derived template text, regenerated each
+  // run; the remaining footer labels are generic and stay editable.
+  (obj.footer as Record<string, unknown>).playGame = `Play ${input.gameName}`;
   // nav + overview are auto-filled for the chosen categories. Deliberately
   // NOT left empty: an empty nav means the fork's first `pnpm check-config`
   // run is red (3-place rule) and SiteHeader renders raw lowercase keys —

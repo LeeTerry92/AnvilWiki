@@ -42,7 +42,9 @@ export const GET: APIRoute = async () => {
       const parsed = parseEntryId(e.id);
       return parsed?.locale === defaultLocale && !e.data.noindex && !e.data.draft;
     })
-    .sort((a, b) => a.data.category.localeCompare(b.data.category) || newestFirst(a, b));
+    .sort(
+      (a, b) => a.data.category.localeCompare(b.data.category, defaultLocale) || newestFirst(a, b),
+    );
 
   const lines: string[] = [
     `# ${site.name}`,
@@ -81,8 +83,11 @@ export const GET: APIRoute = async () => {
     }
 
     // Comparison page — citable facts for "which wiki tool to pick" queries.
+    // The three project pages below are NOT handbook chapters — this heading
+    // splits them out of `## Handbook` so AI engines don't file them under
+    // the docs center.
+    lines.push('', '## Project pages', '');
     lines.push(
-      '',
       `- [AnvilWiki vs Fandom vs Wiki.js — how to choose](${siteUrl}/landing/comparison/): The three species of wiki tooling — hosted platforms, self-hosted collaboration engines, and static publishing templates — and when each fits a game content site, plus why Fandom users switch (platform-fixed page templates, platform-run ads, no custom domain).`,
     );
 

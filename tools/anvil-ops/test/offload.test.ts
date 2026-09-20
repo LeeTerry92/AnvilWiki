@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { canOffload, OFFLOAD_TIMEOUT_MS, WatchdogTimeout, withWatchdog } from '../src/mcp/offload.js';
+import { canOffload, OFFLOAD_TIMEOUT_MS, WatchdogTimeout, watchdogTimeoutFix, withWatchdog } from '../src/mcp/offload.js';
+import { submitLockPath } from '../src/core/gitops.js';
+import { loadSiteConfig } from '../src/core/site.js';
 
 describe('offload watchdog', () => {
   it('passes the task result through when it wins the race', async () => {
@@ -26,5 +28,26 @@ describe('offload watchdog', () => {
 
   it('canOffload is false under vitest (source form, no dist worker) — the known constraint keeping offload itself integration-untested', () => {
     expect(canOffload()).toBe(false);
+  });
+});
+
+describe('watchdog timeout self-rescue guidance', () => {
+  // worker.terminate() hard-kills the worker mid-submit, so submit's finally
+  // lock release never runs — and worker threads share the server pid, which
+  // is exactly what the lock's stale-owner probe checks, so the leftover lock
+  // is stuck for the full 30-minute stale window and every retry reports
+  // "Another submit is already running" with the server's own pid. The
+  // timeout error must hand the user the exact lock file path.
+  it('submit guidance names the exact leftover lock path for the site', () => {
+    const cwd = process.cwd();
+    const fix = watchdogTimeoutFix('submit', cwd);
+    expect(fix).toMatch(/lock/i);
+    // The path in the message must be THE lock path acquireSubmitLock
+    // created for this site — a stale hint would point at a non-lock file.
+    expect(fix).toContain(submitLockPath(loadSiteConfig(cwd).root));
+  });
+
+  it('audit guidance stays lock-free (audit never takes the submit lock)', () => {
+    expect(watchdogTimeoutFix('audit', process.cwd())).not.toMatch(/lock/i);
   });
 });

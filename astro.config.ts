@@ -29,6 +29,11 @@ import { fallbackDetailPaths } from './src/lib/fallback-paths';
  * <head>, so the sitemap must not claim a ja version exists either — Google
  * discards conflicting hreflang clusters, which would silently undo the
  * per-page logic on exactly the duplicated-content URLs that need it most.
+ * `coverage` also feeds fallbackDetailPaths, so it counts EVERY real MDX —
+ * including frontmatter-noindex ones (their fallback variants render noindex
+ * too and must stay out of the sitemap). `detailCoverage` is the same shape
+ * minus those noindex articles: detail-page hreflang alternates must not
+ * advertise a language version that asks not to be indexed.
  *
  * Also builds `categoryCoverage`: category → locales with ≥1 published MDX.
  * (category × locale) list pages with zero articles are thin-content empty
@@ -53,6 +58,7 @@ function extractFrontmatter(src: string): string {
 function buildLastmodMap(
   noindexPaths: Set<string>,
   coverage: Map<string, Set<string>>,
+  detailCoverage: Map<string, Set<string>>,
   categoryCoverage: Map<string, Set<string>>,
 ): Map<string, string> {
   const map = new Map<string, string>();
@@ -72,10 +78,13 @@ function buildLastmodMap(
       // Drafts never publish — their dates must not leak into list-page
       // lastmod (would tell Google a page updated that didn't). Accept the
       // spellings js-yaml (the build's real frontmatter gate) resolves as
-      // boolean true — lowercase-only here would disagree with the gate: a
-      // `draft: True` article is excluded from the build while its lastmod
-      // still feeds the sitemap (a dead URL advertised as fresh).
-      if (/^draft:\s*(?:true|True|TRUE)\s*$/m.test(fm)) continue;
+      // boolean true — `True`/`TRUE` casings and a trailing inline comment
+      // (`draft: true # pending verification` IS boolean true in YAML;
+      // `true#…` with no whitespace before the # is a string and must NOT
+      // match). A narrower match here would disagree with the gate: the
+      // article is excluded from the build while its lastmod still feeds
+      // the sitemap (a dead URL advertised as fresh).
+      if (/^draft:\s*(?:true|True|TRUE)(?:[ \t]+#.*)?\s*$/m.test(fm)) continue;
       const lm = fm.match(/^lastModified:\s*(.+)$/m)?.[1]?.trim();
       const dt = fm.match(/^date:\s*(.+)$/m)?.[1]?.trim();
       const iso = (lm || dt || '').replace(/['"]/g, '');
@@ -88,9 +97,11 @@ function buildLastmodMap(
       const [loc, cat, ...rest] = rel.split(path.sep);
       const slugPath = rest.join('/');
       const articlePath = loc === defaultLocale ? `/${cat}/${slugPath}` : `/${loc}/${cat}/${slugPath}`;
-      // Same true-spelling rule as the draft check above: a `noindex: True`
-      // page must not ship in the sitemap it asked out of.
-      if (/^noindex:\s*(?:true|True|TRUE)\s*$/m.test(fm)) {
+      // Same true-spelling rule as the draft check above (inline comments
+      // included): a `noindex: True` page must not ship in the sitemap it
+      // asked out of.
+      const isNoindex = /^noindex:\s*(?:true|True|TRUE)(?:[ \t]+#.*)?\s*$/m.test(fm);
+      if (isNoindex) {
         noindexPaths.add(articlePath);
       }
       map.set(articlePath, date.toISOString());
@@ -100,6 +111,19 @@ function buildLastmodMap(
       const cov = coverage.get(covKey) ?? new Set<string>();
       cov.add(loc);
       coverage.set(covKey, cov);
+
+      // Detail-level alternates coverage: same shape, minus noindex
+      // articles. A noindex URL is excluded from the sitemap and asks not
+      // to be indexed — hreflang must not advertise it as a language
+      // version of the article. The page side enforces the same rule via
+      // localesForEntry. categoryCoverage below still counts it on
+      // purpose: the category list page itself is indexable and must keep
+      // advertising its locales.
+      if (!isNoindex) {
+        const dcov = detailCoverage.get(covKey) ?? new Set<string>();
+        dcov.add(loc);
+        detailCoverage.set(covKey, dcov);
+      }
 
       // Category-level coverage: which locales have ≥1 article in this
       // category (drives list-page alternates + empty-list exclusion).
@@ -177,10 +201,35 @@ const siteOrigin = process.env.SITE_URL || 'https://anvil.wiki';
 // slash-free — normalize once here instead of at every key construction.
 const normalizePath = (p: string) => (p !== '/' && p.endsWith('/') ? p.slice(0, -1) : p);
 
+/**
+ * Decode a sitemap URL's pathname, defensively. Sitemap URLs come
+ * percent-encoded, but a slug with a bare `%` that isn't valid
+ * percent-encoding ("100%-off") makes decodeURIComponent throw URIError —
+ * from `filter` that kills the whole build, while `serialize` used to
+ * swallow it (asymmetric defense). Both call sites share this helper:
+ * malformed input keeps the raw pathname, so the noindex/lastmod lookups
+ * miss for that one URL instead of the build dying (the raw pathname is
+ * what the lookup tables are keyed on anyway).
+ */
+function decodeSitemapPath(url: string): string {
+  let pathname: string;
+  try {
+    pathname = new URL(url).pathname;
+  } catch {
+    return url;
+  }
+  try {
+    return decodeURIComponent(pathname);
+  } catch {
+    return pathname;
+  }
+}
+
 const noindexPaths = new Set<string>();
 const localeCoverage = new Map<string, Set<string>>();
+const detailCoverage = new Map<string, Set<string>>();
 const categoryCoverage = new Map<string, Set<string>>();
-const lastmodMap = buildLastmodMap(noindexPaths, localeCoverage, categoryCoverage);
+const lastmodMap = buildLastmodMap(noindexPaths, localeCoverage, detailCoverage, categoryCoverage);
 
 /**
  * Article/list hreflang alternates that match the page-level <head> truth.
@@ -193,7 +242,10 @@ function alternatesFor(pagePath: string): Array<{ lang: string; url: string }> |
   // Article: /<cat>/<slug…> or /<locale>/<cat>/<slug…>
   const art = pagePath.match(/^\/(?:([a-z]{2,3})\/)?([a-z-]+)\/(.+)$/);
   if (art && (locales as readonly string[]).includes(art[1] ?? defaultLocale)) {
-    const cov = localeCoverage.get(`${art[2]}/${art[3]}`);
+    // detailCoverage, not localeCoverage: frontmatter-noindex versions are
+    // excluded from the sitemap and render noindex — they must not be
+    // advertised as hreflang alternates.
+    const cov = detailCoverage.get(`${art[2]}/${art[3]}`);
     if (cov) {
       return Array.from(cov).map((l) => ({
         lang: l,
@@ -265,24 +317,20 @@ export default defineConfig({
       // Alternates are built per-URL in `serialize` from real MDX coverage.
       // noindex articles stay out of the sitemap (self-contradictory signal
       // otherwise — the page asks not to be indexed while the sitemap submits it).
-      filter: (url) => !noindexPaths.has(normalizePath(decodeURIComponent(new URL(url).pathname))),
+      filter: (url) => !noindexPaths.has(normalizePath(decodeSitemapPath(url))),
       // Inject <lastmod> from article frontmatter (see buildLastmodMap) and
       // hreflang alternates that mirror the page-level truth (see alternatesFor).
       serialize(item) {
-        try {
-          // Decode: non-ASCII slugs (CJK filenames) come percent-encoded in
-          // item.url, while lastmodMap keys are raw filesystem names —
-          // without decoding the lookup silently misses.
-          const pagePath = normalizePath(decodeURIComponent(new URL(item.url).pathname));
-          const lm = lastmodMap.get(pagePath);
-          if (lm) item.lastmod = lm;
-          // sitemap `links` = hreflang alternates (the lib's own i18n option
-          // would fabricate them for every locale on every URL).
-          const links = alternatesFor(pagePath);
-          if (links) item.links = links;
-        } catch {
-          /* non-URL entries keep default behavior */
-        }
+        // Decode (see decodeSitemapPath): non-ASCII slugs (CJK filenames)
+        // come percent-encoded in item.url, while lastmodMap keys are raw
+        // filesystem names — without decoding the lookup silently misses.
+        const pagePath = normalizePath(decodeSitemapPath(item.url));
+        const lm = lastmodMap.get(pagePath);
+        if (lm) item.lastmod = lm;
+        // sitemap `links` = hreflang alternates (the lib's own i18n option
+        // would fabricate them for every locale on every URL).
+        const links = alternatesFor(pagePath);
+        if (links) item.links = links;
         return item;
       },
     }),

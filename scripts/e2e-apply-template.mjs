@@ -290,6 +290,14 @@ execSync('pnpm build', { cwd: scratch, stdio: 'inherit', shell: win });
 step("pnpm check-config (the fork's first CI run must be green)");
 execSync('pnpm check-config', { cwd: scratch, stdio: 'inherit', shell: win });
 
+// 5.6 The fork's first check-i18n --strict-ui run must be green too — a
+// brand-new locale JSON written from the minimal skeleton used to miss the
+// $schema/search/shared UI namespaces and redden CI on day one. The answers
+// above choose zh with no pre-existing file, so this exercises the
+// fresh-locale clone path end to end.
+step("pnpm check-i18n --strict-ui (the fork's first CI run must be green)");
+execSync('pnpm check-i18n --strict-ui', { cwd: scratch, stdio: 'inherit', shell: win });
+
 step('Assert built pages');
 for (const p of ['dist/index.html', 'dist/zh/index.html']) {
   const html = readFileSync(join(scratch, p), 'utf8');

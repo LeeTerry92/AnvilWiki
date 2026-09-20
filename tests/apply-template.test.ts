@@ -27,6 +27,7 @@ import {
   DEMO_PUBLIC_FILES,
   DEMO_VAR_VALUES,
   buildLocaleLabels,
+  buildScaffoldDescription,
   buildUiImports,
   buildUiMessagesEntries,
   classifyWikiArticles,
@@ -328,6 +329,24 @@ describe('rewriteLocaleJson (P3: no unchosen-category leak, re-run labels kept)'
     expect(out.overview.bosses.overviewDescription).not.toContain('Anvil Quest');
   });
 
+  test('corrupt existing JSON: warns on stderr, output still valid + correctly reset', () => {
+    // Rebuilding is the only way forward, but it must never be SILENT — a
+    // hand-edited file losing every key the user added is the destructive
+    // direction (same philosophy as isDemoLocaleContent's never-delete-
+    // unreadable). The result must still parse and carry the reset namespaces.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const out = JSON.parse(rewriteLocaleJson(makeInput(), 'en', 2026, '{ not json'));
+      expect(out.site.name).toBe('Test Game Wiki');
+      expect(out.nav.bosses).toBe('Bosses');
+      expect(out.overview.bosses.overviewTitle).toBe('All Bosses');
+      expect(out.footer.copyrightText).toContain('2026');
+      expect(warn.mock.calls.some(([m]) => String(m).includes('not valid JSON'))).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   test('fresh locale file (no existing): nav = fixed keys + chosen categories', () => {
     const out = JSON.parse(rewriteLocaleJson(makeInput(), 'zh', 2027));
     expect(out.nav.home).toBe('Home');
@@ -337,6 +356,169 @@ describe('rewriteLocaleJson (P3: no unchosen-category leak, re-run labels kept)'
     // The copyright year is the caller-supplied parameter, not a hidden
     // wall-clock read inside the pure layer (S5).
     expect(out.footer.copyrightText).toBe('© 2027 Test Game Wiki. All rights reserved.');
+  });
+});
+
+describe('rewriteLocaleJson clones the default locale for brand-new files (fresh-locale UI key parity)', () => {
+  // Simulates the CLI sequence: en (existing demo file) rewritten first, then
+  // a brand-new locale with NO file on disk. The clone base must be the
+  // REWRITTEN en output — cloning the demo en.json still on disk would leak
+  // the demo identity into the new locale. Without the clone the fresh file
+  // shipped a ~76-key-shorter skeleton (no $schema/search/shared) and the
+  // fork's first `check-i18n --strict-ui` run went red.
+  const demoEn = readFileSync(join(repoRoot, 'src/locales/en.json'), 'utf8');
+  const enOut = rewriteLocaleJson(makeInput(), 'en', 2026, demoEn);
+  const freshRaw = rewriteLocaleJson(makeInput(), 'zh', 2026, undefined, enOut);
+  const fresh = JSON.parse(freshRaw);
+
+  // Mirrors scripts/check-i18n.ts flattenKeys (arrays are leaf keys) — this
+  // is exactly the key set `--strict-ui` diffs en vs <locale> on, so parity
+  // here == green fork CI. Compared against the REWRITTEN en output (what
+  // en.json holds after the same CLI run), not the demo file on disk: the
+  // reset drops unchosen nav/overview keys, so the gate's reference moves.
+  function flattenKeys(obj: unknown, prefix = ''): string[] {
+    if (typeof obj !== 'object' || obj === null) return [];
+    return Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) =>
+      typeof v === 'object' && v !== null && !Array.isArray(v)
+        ? flattenKeys(v, prefix ? `${prefix}.${k}` : k)
+        : [prefix ? `${prefix}.${k}` : k],
+    );
+  }
+
+  test('deep key set parity with the rewritten en output (strict-ui equivalence)', () => {
+    expect(flattenKeys(fresh).sort()).toEqual(flattenKeys(JSON.parse(enOut)).sort());
+  });
+
+  test('zero demo identity strings in the fresh output', () => {
+    expect(freshRaw).not.toContain('Anvil Quest');
+    expect(fresh.site.name).toBe('Test Game Wiki');
+    // The demo footer's "Play Anvil Quest" label must not ride the clone —
+    // playGame is game-derived template text and is regenerated.
+    expect(fresh.footer.playGame).toBe('Play Test Game');
+  });
+
+  test('nav/overview still follow the chosen categories, not the clone', () => {
+    // The demo en.json ships an `items` category the input did not choose —
+    // the reset (not the clone) decides these namespaces.
+    expect(fresh.nav.items).toBeUndefined();
+    expect(fresh.nav.bosses).toBe('Bosses');
+    expect(fresh.nav.home).toBe('Home');
+    expect(Object.keys(fresh.overview).sort()).toEqual(['bosses', 'codes', 'guides']);
+    expect(fresh.overview.bosses.overviewTitle).toBe('All Bosses');
+  });
+
+  test('an existing file always wins over the clone base (re-run keeps user work)', () => {
+    const existing = JSON.stringify({ customNamespace: { mine: 'keep me' } });
+    const out = JSON.parse(rewriteLocaleJson(makeInput(), 'pt-br', 2026, existing, enOut));
+    expect(out.customNamespace.mine).toBe('keep me');
+    // No existing file AND no clone base → the pre-fix skeleton behavior is
+    // unchanged (minimal output, the shape direct lib callers relied on).
+    const bare = JSON.parse(rewriteLocaleJson(makeInput(), 'pt-br', 2026, undefined));
+    expect(bare.customNamespace).toBeUndefined();
+    expect(bare.shared).toBeUndefined();
+  });
+});
+
+describe('home preset hrefs resolve to chosen categories (no dead links on the fork homepage)', () => {
+  const hrefsOf = (home: {
+    start: { cards: { href: string }[] };
+    explore: { modules: { href: string }[] };
+    popular: { quickLinks: { href: string }[] };
+  }): string[] => [
+    ...home.start.cards.map((c) => c.href),
+    ...home.explore.modules.map((m) => m.href),
+    ...home.popular.quickLinks.map((q) => q.href),
+  ];
+
+  test("guides preset without a 'guides' category substitutes a chosen one and warns", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const out = JSON.parse(
+        rewriteLocaleJson(
+          makeInput({
+            homePreset: 'guides',
+            categories: [
+              { key: 'items', icon: 'lucide:package' },
+              { key: 'codes', icon: 'lucide:gift' },
+            ],
+          }),
+          'en',
+          2026,
+        ),
+      );
+      const hrefs = hrefsOf(out.home);
+      expect(hrefs.length).toBeGreaterThan(0);
+      for (const h of hrefs) expect(['/items', '/codes'], h).toContain(h);
+      expect(
+        warn.mock.calls.some(([m]) => String(m).includes('"guides"') && String(m).includes('substituted')),
+      ).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  test("codes preset without 'codes' substitutes in start.cards AND explore.modules", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const out = JSON.parse(
+        rewriteLocaleJson(
+          makeInput({
+            homePreset: 'codes',
+            categories: [
+              { key: 'bosses', icon: 'lucide:swords' },
+              { key: 'guides', icon: 'lucide:book-open' },
+            ],
+          }),
+          'en',
+          2026,
+        ),
+      );
+      const hrefs = [
+        ...hrefsOf(out.home),
+        // The preset's fixed slots, spelled out: cards 1-3 + the codes module.
+        out.home.start.cards[0].href,
+        out.home.start.cards[1].href,
+        out.home.start.cards[2].href,
+        out.home.explore.modules[0].href,
+      ];
+      for (const h of hrefs) expect(['/bosses', '/guides'], h).toContain(h);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  test('all preferred categories chosen → hrefs unchanged (stable default path)', () => {
+    const out = JSON.parse(rewriteLocaleJson(makeInput(), 'en', 2026));
+    expect(out.home.start.cards.map((c: { href: string }) => c.href)).toEqual([
+      '/codes',
+      '/bosses',
+      '/guides',
+    ]);
+    expect(out.home.explore.modules[0].href).toBe('/codes');
+  });
+});
+
+describe('buildScaffoldDescription (scaffold must satisfy the 40-165 schema for any key)', () => {
+  // The old template grew 2×len(key) past a ~144-char base: "walkthrough"
+  // (11 chars) already exceeded the schema's max(165) and failed the fork's
+  // FIRST build (drafts are schema-validated too).
+  test('normal, long, and 40-char keys all land inside the schema window', () => {
+    for (const key of ['bosses', 'walkthrough', 'achievements', 'a'.repeat(40)]) {
+      const d = buildScaffoldDescription(key);
+      expect(d.length, `key "${key}" → ${d.length} chars`).toBeGreaterThanOrEqual(40);
+      expect(d.length, `key "${key}" → ${d.length} chars`).toBeLessThanOrEqual(165);
+    }
+  });
+
+  test('a normal key keeps the keyed variant (echoes the category)', () => {
+    expect(buildScaffoldDescription('bosses')).toContain('the bosses category');
+  });
+
+  test('an over-long key falls back to the fixed no-key sentence', () => {
+    const d = buildScaffoldDescription('a'.repeat(60));
+    expect(d).not.toContain('a'.repeat(60));
+    expect(d.length).toBeLessThanOrEqual(165);
+    expect(d.length).toBeGreaterThanOrEqual(40);
   });
 });
 

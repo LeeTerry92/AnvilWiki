@@ -96,17 +96,28 @@ export async function getEntriesByCategory(category: string, locale: Locale): Pr
 }
 
 /**
- * All locales that have at least one article for a given (category, slug).
- * Used to generate hreflang alternates. Only lists locales whose page is
- * actually built (the default-locale page exists only if an English MDX
- * exists), so alternates never point at a 404.
+ * All locales that have at least one indexable article for a given
+ * (category, slug). Used to generate hreflang alternates. Only lists locales
+ * whose page is actually built (the default-locale page exists only if an
+ * English MDX exists), so alternates never point at a 404.
+ *
+ * noindex entries are skipped on purpose: their page renders
+ * `noindex, nofollow`, so hreflang must not claim it as a language version —
+ * the sitemap side enforces the same rule via astro.config's detailCoverage.
+ * Category-level coverage (localesForCategory) deliberately still counts
+ * noindex articles: the category list page itself is indexable.
  */
 export async function localesForEntry(category: string, slug: string): Promise<Locale[]> {
   const all = await getCollection('wiki');
   const found = new Set<Locale>();
   for (const entry of all) {
     const parsed = parseEntryId(entry.id);
-    if (isPublished(entry) && parsed?.category === category && parsed.slug === slug) {
+    if (
+      isPublished(entry) &&
+      !entry.data.noindex &&
+      parsed?.category === category &&
+      parsed.slug === slug
+    ) {
       found.add(parsed.locale);
     }
   }

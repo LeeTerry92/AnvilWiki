@@ -566,6 +566,9 @@ function removeLandingPage(): number {
   }
   // Also disable the demo header's "back to landing" link so the removal is
   // complete (the flag lives in project.ts, which survives this CLI).
+  // The flip must never be a silent no-op (audit round 21): a drifted pattern
+  // would leave fork nav pointing at the deleted /landing/ routes with no
+  // build error. Already-flipped files (re-runs) stay quiet.
   const projectPath = path.resolve(ROOT, 'src/config/project.ts');
   if (fs.existsSync(projectPath)) {
     const src = read('src/config/project.ts');
@@ -573,6 +576,10 @@ function removeLandingPage(): number {
     if (flipped !== src) {
       if (!DRY_RUN) writeAtomic(projectPath, flipped);
       removed++;
+    } else if (!src.includes('landingLinkEnabled = false')) {
+      console.warn(
+        '⚠️ Could not flip landingLinkEnabled in src/config/project.ts — pattern drifted? Disable the landing link manually, or the header will link at the removed /landing/ routes.',
+      );
     }
   }
   return removed;

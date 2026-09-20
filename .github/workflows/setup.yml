@@ -43,7 +43,7 @@ jobs:
           RAW_SITE_URL: ${{ inputs.site_url }}
         run: |
           python3 - <<'EOF'
-          import os, re
+          import os, re, sys
           from urllib.parse import urlparse
           # Normalize: strip any leading scheme (http(s)://) AND any following
           # slash/backslash run, then force https://. The old ^https?:// pattern
@@ -114,6 +114,29 @@ jobs:
               # no-op rewrite here would leave the fork on demo values with
               # a misleading success status.
               raise SystemExit('❌ wrangler.toml [vars] rewrite matched nothing — template drift?')
+          # Custom [vars] keys the template does not know are preserved
+          # verbatim (audit round 21; same rule as rewriteWranglerVars in
+          # scripts/lib/apply-rewrites.ts — the template cannot know a fork's
+          # custom vars, and silently dropping them on a re-run is the
+          # destructive direction). Pinned by tests/workflows.test.ts.
+          TEMPLATE_KEYS = {
+              'SITE_URL', 'INDEXNOW_KEY', 'PUBLIC_GISCUS_REPO', 'PUBLIC_GISCUS_REPO_ID',
+              'PUBLIC_GISCUS_CATEGORY', 'PUBLIC_GISCUS_CATEGORY_ID', 'PUBLIC_GISCUS_MAPPING',
+              'PUBLIC_SPONSOR_URL', 'PUBLIC_SPONSOR_IMAGE_URL', 'PUBLIC_CF_BEACON_TOKEN',
+              'PUBLIC_ADSENSE_CLIENT', 'PUBLIC_ADSENSE_SLOT_STICKY', 'PUBLIC_ADSENSE_SLOT_SIDEBAR',
+              'PUBLIC_ADSENSE_SLOT_INCONTENT', 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_300X250',
+              'PUBLIC_ADSTERRA_SLOT_INCONTENT_728X90', 'PUBLIC_ADSTERRA_SLOT_NATIVE_BANNER',
+              'PUBLIC_ADSTERRA_SLOT_STICKY_320X50', 'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X300',
+              'PUBLIC_ADSTERRA_SLOT_SIDEBAR_160X600', 'PUBLIC_GA_ID', 'PUBLIC_GSC_VERIFICATION',
+          }
+          custom = []
+          for ln in s[m.start():m.end()].splitlines():
+              km = re.match(r'^([A-Za-z_][A-Za-z0-9_]*)\s*=', ln)
+              if km and km.group(1) not in TEMPLATE_KEYS:
+                  custom.append(ln.rstrip())
+                  print(f'⚠️ [vars] key "{km.group(1)}" is not part of the template — preserved verbatim at the end of the section.', file=sys.stderr)
+          if custom:
+              new_vars += '\n\n# Custom [vars] keys the template does not know are preserved verbatim.\n' + '\n'.join(custom)
           # Plain string splicing, NOT re.subn: the replacement embeds the
           # user-supplied URL, and re.subn treats backslashes in a replacement
           # as escapes (a trailing `\` → re.error). search + slicing keeps the
@@ -143,6 +166,11 @@ jobs:
           # the deleted ~/config/landing and breaks the fork's build.
           rm -rf src/components/landing src/config/landing.ts src/config/landing-types.ts src/config/landing-shared.ts src/config/landing-en.ts src/config/landing-zh.ts src/config/landing-templates.ts src/pages/landing.astro src/pages/landing src/pages/zh/landing.astro src/pages/zh/landing public/images/showcase public/images/wechat-qr.jpg public/_redirects
           sed -i.bak 's/landingLinkEnabled = true/landingLinkEnabled = false/' src/config/project.ts && rm -f src/config/project.ts.bak
+          # The flip must never be a silent no-op (audit round 21): a drifted
+          # pattern would leave fork nav pointing at the deleted /landing/
+          # routes with no build error. Same loud-fail policy as the [vars]
+          # match-nothing guard above.
+          grep -q 'landingLinkEnabled = false' src/config/project.ts || { echo "❌ landingLinkEnabled flip matched nothing — template drift? Update this step." >&2; exit 1; }
 
       - name: Clear demo assets and demo author
         if: ${{ inputs.clear_demo_content != 'false' }}
@@ -238,9 +266,16 @@ jobs:
           # --force-with-lease alone rejects idempotent re-runs ("stale info").
           git fetch origin chore/init-from-template || true
           git push --force-with-lease origin chore/init-from-template
-          gh pr create --title "Initialize AnvilWiki for your game" \
-            --body "Automated by the Initialize AnvilWiki workflow. wrangler.toml [vars] reset to ${SITE_URL_INPUT} (demo Giscus cleared); project landing page removed. Next: run pnpm apply-template locally for game name / theme / locales, then connect Cloudflare Pages (docs/deployment.md)." \
-            || echo "PR already exists — leaving the existing one open."
+          # "PR already exists" is detected by ASKING first (gh pr view), not
+          # by swallowing every create failure (audit round 21: `|| echo`
+          # turned rate limits / auth errors / network failures into a green
+          # run with no PR and a misleading success line).
+          if gh pr view chore/init-from-template --json url >/dev/null 2>&1; then
+            echo "PR already exists — leaving the existing one open."
+          else
+            gh pr create --title "Initialize AnvilWiki for your game" \
+              --body "Automated by the Initialize AnvilWiki workflow. wrangler.toml [vars] reset to ${SITE_URL_INPUT} (demo Giscus cleared); project landing page removed. Next: run pnpm apply-template locally for game name / theme / locales, then connect Cloudflare Pages (docs/deployment.md)."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # The NORMALIZED url (steps.vars), not the raw input — keeps shell

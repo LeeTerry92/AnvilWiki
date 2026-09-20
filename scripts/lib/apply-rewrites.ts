@@ -679,9 +679,25 @@ export function rewriteWranglerVars(input: { domain: string }, src: string): str
   // inside doesn't end the string early.
   const section = src.match(/(?:^|\n)\[vars\]\r?\n([\s\S]*?)(?=\r?\n\[|$)/)?.[1] ?? '';
   const existing = new Map<string, string>();
+  // Raw (trimmed) source lines keyed the same way — keys OUTSIDE the template
+  // are re-emitted verbatim instead of dropped (audit round 21: the template
+  // cannot know a fork's custom vars; losing them silently on a re-run is the
+  // destructive direction, same philosophy as the warn-and-keep paths for
+  // locale files and user articles).
+  const existingRaw = new Map<string, string>();
   for (const line of section.split(/\r?\n/)) {
     const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:"((?:\\.|[^"\\])*)"|'([^']*)'|([^#\s][^#]*?))\s*(?:#.*)?$/);
-    if (m) existing.set(m[1], m[2] ?? m[3] ?? m[4]);
+    if (m) {
+      existing.set(m[1], m[2] ?? m[3] ?? m[4]);
+      existingRaw.set(m[1], line.trim());
+    }
+  }
+  const templateKeys = new Set(WRANGLER_VARS_TEMPLATE.map((spec) => spec.key));
+  const unknownKeys = [...existing.keys()].filter((key) => !templateKeys.has(key));
+  for (const key of unknownKeys) {
+    console.warn(
+      `⚠️ [vars] key "${key}" is not part of the template — its line is preserved verbatim at the end of the [vars] section. Remove it manually if unwanted.`,
+    );
   }
 
   const lines: string[] = ['[vars]'];
@@ -705,6 +721,13 @@ export function rewriteWranglerVars(input: { domain: string }, src: string): str
     // A preserved value for a commented-out slot means the user explicitly
     // enabled it — re-emit it uncommented.
     lines.push(spec.commented && keep === null ? `#${rendered}` : rendered);
+  }
+  if (unknownKeys.length > 0) {
+    lines.push('');
+    lines.push('# Custom [vars] keys the template does not know are preserved verbatim.');
+    for (const key of unknownKeys) {
+      lines.push(existingRaw.get(key) ?? `${key} = "${tomlStr(existing.get(key) ?? '')}"`);
+    }
   }
   const newVarsBlock = lines.join(eol);
   // Remove the demo-intro warning block: after the [vars] rewrite it would
@@ -779,10 +802,23 @@ export function isDemoPublicFileContent(rel: string, source: string): boolean {
   // filename, so this can never collide with user work.
   const marker = DEMO_ADSTERRA_UNIT_MARKERS[rel];
   if (marker) return source.includes(marker);
-  return rel === 'google8362d9398114b66b.html';
+  return rel === 'google8362d9398114b66b.html' || rel === DEMO_INDEXNOW_KEY_FILE;
 }
 
+/**
+ * The pre-v2.33.0 manual-flow IndexNow key file — committed to public/ by the
+ * old generate-and-commit flow and left behind when v2.33.0 moved the key to
+ * env. Removed from the template tree in v2.34.0 (audit round 21): while it
+ * stayed deployed it kept a git-history-public key valid as an ownership
+ * token for the demo site, and every fork's build shipped it. Listed in
+ * DEMO_PUBLIC_FILES so forks initialized from older trees lose it on their
+ * next setup.yml rerun. Exact-name rule: a fork's OWN committed key file from
+ * the same era has a different name and is never touched.
+ */
+export const DEMO_INDEXNOW_KEY_FILE = '39a73e7c4264b418baa6757d20446910.txt';
+
 export const DEMO_PUBLIC_FILES = [
+  DEMO_INDEXNOW_KEY_FILE,
   'google8362d9398114b66b.html',
   // Demo Adsterra unit pages (public/ads/<name>.html) — the demo's ad-unit
   // keys are config, not template content; a fork follows docs/ads.md and

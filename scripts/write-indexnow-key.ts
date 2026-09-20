@@ -8,9 +8,14 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { indexNowKeyFileName, normalizeIndexNowKey } from './lib/indexnow';
+import { indexNowKeyFileName, loadLocalEnv, normalizeIndexNowKey } from './lib/indexnow';
 
 const dist = path.resolve(process.cwd(), 'dist');
+
+// tsx does not read .env (unlike astro/Vite) — without this loader the
+// documented "local .env" copy of INDEXNOW_KEY never reached the postbuild
+// emission and only real CI/Cloudflare builds emitted the key file.
+loadLocalEnv();
 const key = normalizeIndexNowKey(process.env.INDEXNOW_KEY);
 
 if (!key) {

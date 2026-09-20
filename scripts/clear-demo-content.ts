@@ -40,7 +40,9 @@ function main(): void {
   }));
   const { demo, kept } = classifyWikiArticles(entries);
   for (const file of demo) {
-    console.log(`🗑️  demo article: src/content/wiki/${file.rel}`);
+    // stderr, like the kept-warnings: a deletion is a decision the operator
+    // must see even when stdout is piped/quiet (audit round 21 P3-6).
+    console.warn(`🗑️  demo article (mentions the demo game): src/content/wiki/${file.rel}`);
     if (!DRY_RUN) fs.unlinkSync(path.join(base, file.rel));
   }
   for (const file of kept) {

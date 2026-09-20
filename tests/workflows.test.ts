@@ -379,6 +379,36 @@ describe('setup.yml [vars] rewrite is line-anchored and key-aligned with the CLI
   });
 });
 
+describe('setup.yml failure surfaces are loud (audit round 21)', () => {
+  const setupRaw = readFileSync(join(root, SETUP), 'utf8');
+
+  test('PR creation asks before creating — no blanket failure swallowing', () => {
+    // `gh pr create … || echo "PR already exists"` turned rate limits, auth
+    // errors and network failures into a green run with no PR and a
+    // misleading success line. "Already exists" is now detected by ASKING
+    // first (gh pr view); a real create failure fails the step.
+    expect(setupRaw).toContain('gh pr view chore/init-from-template');
+    expect(setupRaw).not.toContain('|| echo "PR already exists');
+    expect(setupRaw.indexOf('gh pr view')).toBeLessThan(setupRaw.indexOf('gh pr create'));
+  });
+
+  test('the landingLinkEnabled flip fails loudly on pattern drift', () => {
+    // A silent no-op sed would leave fork nav pointing at the deleted
+    // /landing/ routes with no build error — same loud-fail policy as the
+    // [vars] match-nothing guard above it.
+    expect(setupRaw).toContain("grep -q 'landingLinkEnabled = false' src/config/project.ts");
+  });
+
+  test('custom [vars] keys are preserved verbatim, not dropped (single-source rule with the CLI)', () => {
+    // rewriteWranglerVars (the JS channel) preserves and warns for keys
+    // outside the template; the python channel must behave the same. Pinned
+    // by the shared sentinel comment both channels emit.
+    expect(setupRaw).toContain('# Custom [vars] keys the template does not know are preserved verbatim.');
+    expect(setupRaw).toContain('TEMPLATE_KEYS');
+    expect(setupRaw).toContain("file=sys.stderr");
+  });
+});
+
 describe('freshness audit stays read-only', () => {
   test('upstream-only guard and issues-only permissions unchanged', () => {
     const wf = readWorkflow(AUDIT) as Workflow;

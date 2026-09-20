@@ -10,11 +10,13 @@
  *      Automation adds --wait-for-deploy <sha> + --wait-for-key so a Pages
  *      deployment is proven live before submission.
  *
- * Key precedence:
- *   1. INDEXNOW_KEY environment variable (recommended for template forks).
- *   2. Existing public/<key>.txt (backward compatibility).
- *   3. Local-only fallback: generate public/<key>.txt, preserving the older
- *      one-time manual flow. Production mode never invents a key.
+ * Key: INDEXNOW_KEY environment variable, required in BOTH modes. A local
+ * .env file is loaded automatically (tsx does not read .env on its own);
+ * real environment values win over .env. There is deliberately NO key-file
+ * fallback: scanning public/*.txt made a local run adopt whatever committed
+ * key file it found — audit round 21 caught that path submitting under the
+ * demo site's retired key, and the generate-and-commit flow it served was
+ * superseded by the env-backed flow (v2.33.0).
  *
  * Usage:
  *   pnpm submit-indexnow
@@ -23,21 +25,19 @@
  *   pnpm submit-indexnow -- --site https://example.com --wait-for-deploy <sha> --wait-for-key
  */
 
-import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {
   extractSitemapLocs,
-  INDEXNOW_KEY_RE,
   indexNowKeyFileName,
   isAcceptedIndexNowStatus,
+  loadLocalEnv,
   normalizeIndexNowKey,
   normalizeSiteOrigin,
 } from './lib/indexnow';
 
 const ROOT = process.cwd();
 const DIST = path.resolve(ROOT, 'dist');
-const PUBLIC_DIR = path.resolve(ROOT, 'public');
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
 const REQUEST_TIMEOUT_MS = 20_000;
 const DEFAULT_WAIT_SECONDS = 300;
@@ -191,39 +191,10 @@ async function collectRemoteUrls(siteOrigin: string): Promise<string[]> {
   return [...urls].sort();
 }
 
-/** Find an existing committed IndexNow key file in public/ (backward compatibility). */
-function detectCommittedKey(): { key: string; file: string } | null {
-  if (!fs.existsSync(PUBLIC_DIR)) return null;
-
-  for (const name of fs.readdirSync(PUBLIC_DIR)) {
-    if (!name.endsWith('.txt')) continue;
-    const key = name.slice(0, -4);
-    if (!INDEXNOW_KEY_RE.test(key)) continue;
-
-    const content = fs.readFileSync(path.join(PUBLIC_DIR, name), 'utf8').trim();
-    if (content === key) return { key, file: name };
-  }
-
-  return null;
-}
-
-function configuredKey(): { key: string; source: 'env' | 'public' } | null {
+/** Resolve the ownership key from the environment (env vars + local .env). */
+function configuredKey(): { key: string; source: 'env' } | null {
   const envKey = normalizeIndexNowKey(process.env.INDEXNOW_KEY);
-  if (envKey) return { key: envKey, source: 'env' };
-
-  const committed = detectCommittedKey();
-  if (committed) return { key: committed.key, source: 'public' };
-
-  return null;
-}
-
-function generateLocalKey(): { key: string; source: 'generated' } {
-  const key = crypto.randomBytes(16).toString('hex');
-  const file = indexNowKeyFileName(key);
-  fs.writeFileSync(path.join(PUBLIC_DIR, file), key, 'utf8');
-  console.log(`[IndexNow] Generated public/${file}`);
-  console.log('[IndexNow] Commit + deploy that file once, then rerun the command.');
-  return { key, source: 'generated' };
+  return envKey ? { key: envKey, source: 'env' } : null;
 }
 
 function assertSingleHost(urls: string[]): string {
@@ -322,6 +293,7 @@ async function submitBatch(
 }
 
 async function main(): Promise<void> {
+  loadLocalEnv();
   const options = parseArgs(process.argv.slice(2));
   const siteOrigin = options.site ? normalizeSiteOrigin(options.site) : null;
 
@@ -346,29 +318,22 @@ async function main(): Promise<void> {
     console.log(
       found
         ? `[IndexNow] Key source: ${found.source}`
-        : siteOrigin
-          ? '[IndexNow] No key configured; a real production run would fail — set INDEXNOW_KEY.'
-          : '[IndexNow] No key configured; a real local run would generate one.',
+        : '[IndexNow] No INDEXNOW_KEY configured (environment or .env) — a real run would fail. See docs/deployment.md.',
     );
     return;
   }
 
-  const keyInfo =
-    found ??
-    (siteOrigin
-      ? (() => {
-          throw new Error(
-            'INDEXNOW_KEY is not configured and no public/<key>.txt fallback exists. Production mode never generates a key.',
-          );
-        })()
-      : generateLocalKey());
-
-  if (keyInfo.source === 'generated') {
-    console.log('[IndexNow] First run stops here: deploy the new public key file, then rerun.');
-    return;
+  if (!found) {
+    throw new Error(
+      'INDEXNOW_KEY is not configured (environment or local .env). ' +
+        (siteOrigin
+          ? 'Production mode requires the same key the production build deploys.'
+          : 'Set it to the key your build emits at /<key>.txt — the old generate-and-commit flow was removed in v2.34.0.') +
+        ' See docs/deployment.md.',
+    );
   }
 
-  const key = keyInfo.key;
+  const key = found.key;
   const sitemapOrigin = new URL(urls[0]).origin;
   const keyLocation = `${sitemapOrigin}/${indexNowKeyFileName(key)}`;
 
@@ -383,7 +348,7 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log(`[IndexNow] Submitting ${urls.length} URL(s); key source: ${keyInfo.source}`);
+  console.log(`[IndexNow] Submitting ${urls.length} URL(s); key source: ${found.source}`);
 
   for (let index = 0; index < urls.length; index += 10_000) {
     const batch = urls.slice(index, index + 10_000);

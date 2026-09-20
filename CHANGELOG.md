@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **IndexNow key 单源化：移除 public/ key 文件兼容通道与本地生成流程**（第 21 轮全项目红队审计 P2 闭环；fork 常规 merge 零迁移，曾用旧手工流程的站见下）：
+  - **删除 `public/39a73e….txt`**（v2.33.0 之前的旧代 key 文件，commit a536be6）：该文件在生产持续伺服=旧 key 一直是有效所有权凭据（且随 git 历史永久公开，任何人可持旧 key 对 anvil.wiki 提交 IndexNow）；同时它不在 `DEMO_PUBLIC_FILES`，每个 fork 的 dist 都带着它。现文件删除+登记进 `DEMO_PUBLIC_FILES`（精确名规则），旧树初始化的 fork 重跑 setup.yml 时会被 `clear-demo-public.ts` 清掉。**轮换面从「四处」更正为「三处活跃副本+第四处=已部署旧 key 文件本身」**，`docs/deployment.md` 轮换节补这条与删除义务。
+  - **`submit-indexnow` 移除 `detectCommittedKey` 扫描与 `generateLocalKey` 生成**：原兼容路径会拾取 public/ 下任意内容=name 的 .txt——第 21 轮实证：本地无 env 运行曾静默选中 demo 旧 key（`Key source: public` 干跑复现），fork 同理会把提交挂到 anvil.wiki 的 key 下。现在两种模式都要求 `INDEXNOW_KEY`（环境变量或本地 `.env`），未配置响亮失败并指向 deployment.md。
+  - **`loadLocalEnv`（scripts/lib/indexnow.ts）**：tsx 不像 astro/Vite 那样读 `.env`——v2.33.0 记录的「本地 .env 双通道」此前是死配置。现在 `submit-indexnow` 与 `write-indexnow-key`（postbuild）启动时加载 `.env`（已有环境变量优先；文件缺失静默；解析失败 ⚠️ 不阻断）。本地 `pnpm build` 自此也会按 `.env` 产出 `dist/<key>.txt`。`tests/indexnow.test.ts` 补 loadLocalEnv 行为测试与 fallback 移除文本契约。
+- **wrangler.toml [vars] 重写保留模板清单外的自定义键**（第 21 轮 P2）：`rewriteWranglerVars` 与 setup.yml python 通道此前只重发 22 个模板键，fork 自加的 env（未提交即不可恢复）在重跑时被静默丢弃且零警告——对照 nav/文章通道的 warn-and-keep 哲学属漏网。现两通道均把未知键**原样保留**在 [vars] 段尾（附一行哨兵注释，逐键 stderr ⚠️），重跑字节幂等；契约测试钉保留+警告+幂等（JS 行为级）与哨兵行（python 文本级）。
+- **setup.yml 三处假成功/静默面响亮化**（第 21 轮 P2/P3）：① `gh pr create … || echo "PR already exists"` 改为先 `gh pr view` 探测再创建——原写法把限流/认证/网络一切失败吞成绿灯无 PR；② `landingLinkEnabled` sed 翻转后加 `grep -q` 守卫，模式漂移即红（CLI 通道同步补 no-match ⚠️，re-run 已翻转态保持安静）；③ `clear-demo-content` 的逐文件 🗑️ 行改 stderr（与 kept ⚠️ 同通道，stdout 静音时删除决策仍可见）。`tests/workflows.test.ts` 新增三条契约；`scripts/e2e-apply-template.mjs` 补 landingLinkEnabled 翻转断言与旧 key 文件 tripwire。
+
+### Added
+
+- **template-audit 新增 wrangler [vars] 全注册表扫描**（第 21 轮 P3）：此前只查 SITE_URL+Giscus 两键，demo GA4/Adsterra 六单元/IndexNow key 值在「跳过 apply-template 直接上线」的 fork 里零告警（demo GA4 会收走 fork 的分析数据、demo 单元 key 会渲染 demo 的广告）。现复用 `DEMO_VAR_VALUES` 逐值扫描 [vars] 活值行。
+
 ## [2.33.1] — 2026-09-20
 
 ### Changed

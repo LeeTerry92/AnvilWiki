@@ -1,9 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
   extractSitemapLocs,
   indexNowKeyFileName,
   isAcceptedIndexNowStatus,
+  loadLocalEnv,
   normalizeIndexNowKey,
   normalizeSiteOrigin,
 } from '../scripts/lib/indexnow';
@@ -55,5 +58,41 @@ describe('IndexNow protocol helpers', () => {
     expect(writer).toContain('CF_PAGES_COMMIT_SHA');
     expect(writer).toContain('.well-known');
     expect(writer).toContain('anvilwiki-deploy.txt');
+  });
+});
+
+describe('local .env loading (the documented "local .env" rotation copy must actually be read)', () => {
+  test('fills process.env from a file without clobbering existing values', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'idx-env-'));
+    const envPath = join(dir, '.env');
+    writeFileSync(envPath, 'IDX_TEST_FROM_FILE=from-file\nIDX_TEST_PRESET=from-file\n');
+    process.env.IDX_TEST_PRESET = 'already-set';
+    try {
+      loadLocalEnv(envPath);
+      expect(process.env.IDX_TEST_FROM_FILE).toBe('from-file');
+      expect(process.env.IDX_TEST_PRESET).toBe('already-set');
+    } finally {
+      delete process.env.IDX_TEST_FROM_FILE;
+      delete process.env.IDX_TEST_PRESET;
+    }
+  });
+
+  test('a missing .env file is a silent no-op', () => {
+    expect(() => loadLocalEnv(join(mkdtempSync(join(tmpdir(), 'idx-env-')), 'absent.env'))).not.toThrow();
+  });
+});
+
+describe('submit-indexnow key-source contract (audit round 21)', () => {
+  const cli = readFileSync('scripts/submit-indexnow.ts', 'utf8');
+
+  test('no public/ key-file fallback and no key generation — env (or local .env) only', () => {
+    // The retired fallback scanned public/*.txt and a local run adopted
+    // whatever committed key file it found — the demo's retired key rode
+    // into forks and even back into demo submissions. Both escape hatches
+    // are gone; the single source is INDEXNOW_KEY (env, filled from .env by
+    // loadLocalEnv under tsx).
+    expect(cli).not.toContain('detectCommittedKey');
+    expect(cli).not.toContain('generateLocalKey');
+    expect(cli).toContain('loadLocalEnv()');
   });
 });

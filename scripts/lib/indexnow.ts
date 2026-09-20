@@ -6,7 +6,30 @@
  * cannot silently disagree.
  */
 
+import * as path from 'node:path';
+
 export const INDEXNOW_KEY_RE = /^[A-Za-z0-9-]{8,128}$/;
+
+/**
+ * Load a local .env file into process.env. submit-indexnow and
+ * write-indexnow-key run under tsx, which — unlike `astro build` (Vite) —
+ * does NOT read .env: before this loader, the "local .env" copy of
+ * INDEXNOW_KEY documented since v2.33.0 was dead config, and a local
+ * submit-indexnow run silently fell back to whatever public/<key>.txt it
+ * found. Existing process.env values win (CI/Actions vars are never
+ * clobbered); a missing file is a no-op; a malformed file warns instead of
+ * failing (the value may still arrive from the real environment).
+ */
+export function loadLocalEnv(filePath = '.env'): void {
+  try {
+    process.loadEnvFile(path.resolve(filePath));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    console.warn(
+      `⚠️ Could not parse ${filePath} (${error instanceof Error ? error.message : String(error)}) — continuing with the process environment only.`,
+    );
+  }
+}
 
 export function normalizeIndexNowKey(raw: string | undefined | null): string | null {
   const value = raw?.trim() ?? '';

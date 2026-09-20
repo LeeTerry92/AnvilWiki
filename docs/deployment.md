@@ -333,7 +333,9 @@ curl -I https://<你的域名>/privacy-policy/
    
    IndexNow 是变更通知，不等于保证抓取或收录；Google Search Console / sitemap 仍是独立链路。
 
-**key 轮换**：`INDEXNOW_KEY` 的活跃副本共三处——Cloudflare 生产构建（`wrangler.toml` 的 `[vars]`，或 dashboard Variables）、GitHub 仓库 Actions variable、本地 `.env`（若配了手工命令）。轮换时三处必须同步更新：Cloudflare 侧与 Actions variable 任一侧漏改，自动推送都会因「等不到对应 `<key>.txt` 上线」响亮失败（有重试与超时，不会静默提交）；本地 `.env` 漏改只影响手工命令。
+**key 轮换**：`INDEXNOW_KEY` 的活跃副本共三处——Cloudflare 生产构建（`wrangler.toml` 的 `[vars]`，或 dashboard Variables）、GitHub 仓库 Actions variable、本地 `.env`（手工命令会自动读取 `.env`，无需手动 export）。轮换时三处必须同步更新：Cloudflare 侧与 Actions variable 任一侧漏改，自动推送都会因「等不到对应 `<key>.txt` 上线」响亮失败（有重试与超时，不会静默提交）；本地 `.env` 漏改只影响手工命令。
+
+**轮换第四处：已部署的旧 key 文件本身。** 旧 key 的 `<key>.txt` 只要还挂在你的域名根路径，旧 key 就是一天有效的所有权凭据——而它早已随提交进入 git 历史，等于永久公开。轮换（或从旧版「手工生成 key 文件」流程迁移到环境变量）时，必须把 `public/<key>.txt` 一并删除并部署；模板已不再携带任何 key 文件，本条只影响曾用旧流程提交过 key 文件的存量站。
 
 需要手工检查而不发送请求：
 
@@ -348,7 +350,7 @@ INDEXNOW_KEY=你的key pnpm submit-indexnow -- --dry-run
 INDEXNOW_KEY=你的key pnpm submit-indexnow -- --site https://你的域名 --wait-for-key
 ```
 
-旧站如果已经有合法的 `public/<key>.txt`，手工命令仍会兼容读取；迁移到环境变量后无需再新增第二个 key。
+手工命令要求已配置 `INDEXNOW_KEY`（环境变量或项目根目录 `.env`，与生产构建同一个值）。旧版的「运行时自动生成 `public/<key>.txt` 并扫描已有 key 文件」兼容通道已在 v2.34.0 移除——扫描 public/ 会捡到过期或他站的 key 文件（第 21 轮审计实证：demo 旧 key 文件曾被本地运行静默选中）；生成式流程早已被环境变量流程取代。
 
 ### 性能验证
 

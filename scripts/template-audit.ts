@@ -35,6 +35,7 @@ import {
   DEMO_DOMAINS,
   DEMO_GALLERY_IMAGES,
   DEMO_PUBLIC_FILES,
+  DEMO_VAR_VALUES,
   isDemoPublicFileContent,
 } from './lib/apply-rewrites';
 import { walkFiles } from './lib/walk';
@@ -361,6 +362,29 @@ check(() => {
     warn(`wrangler.toml still points comments at the demo Giscus ("${hit}") — fork comments would land in PNGTRID/AnvilWiki discussions.`);
   } else {
     ok('wrangler.toml has no demo Giscus config');
+  }
+});
+
+check(() => {
+  if (!exists('wrangler.toml')) {
+    ok('no wrangler.toml (nothing to check)');
+    return;
+  }
+  // Full-registry scan (audit round 21): the cleanup channels cover every
+  // DEMO_VAR_VALUES entry, but this audit tool previously only looked at
+  // SITE_URL + Giscus — a fork that skipped apply-template shipped demo
+  // GA4/Adsterra/IndexNow values with no warning (demo GA4 would receive the
+  // fork's analytics; demo ad-unit keys would render the demo's ads).
+  const section = read('wrangler.toml').match(/(?:^|\n)\[vars\]\r?\n([\s\S]*?)(?=\r?\n\[|$)/)?.[1] ?? '';
+  const hits: string[] = [];
+  for (const line of section.split(/\r?\n/)) {
+    const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"(.*)"\s*$/);
+    if (m && DEMO_VAR_VALUES.includes(m[2])) hits.push(m[1]);
+  }
+  if (hits.length > 0) {
+    warn(`wrangler.toml [vars] still carries demo value(s) (${hits.join(', ')}) — demo analytics/ads/IndexNow config sends fork data to the demo site. Run pnpm apply-template or edit [vars] (docs/deployment.md).`);
+  } else {
+    ok('wrangler.toml [vars] carries no demo values (full DEMO_VAR_VALUES scan)');
   }
 });
 

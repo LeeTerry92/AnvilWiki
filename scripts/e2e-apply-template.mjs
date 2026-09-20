@@ -135,6 +135,18 @@ for (const unit of ['sticky-320x50', 'sidebar-300x250', 'sidebar-160x300', 'side
     fail(`demo ad unit page still present after fork init: public/ads/${unit}.html — DEMO_PUBLIC_FILES was not cleared`);
   }
 }
+// Audit round 21 tripwires: the landing-link flip must have happened (a
+// silent no-op leaves fork nav pointing at the deleted /landing/ routes),
+// and the retired pre-env demo IndexNow key file must never ride along
+// (DEMO_PUBLIC_FILES; vacuous while the file stays out of the tree —
+// meaningful if anyone ever re-commits it).
+const projectTs = readFileSync(join(scratch, 'src/config/project.ts'), 'utf8');
+if (projectTs.includes('landingLinkEnabled = true')) {
+  fail('landingLinkEnabled still true after landing removal — the flip went silently missing');
+}
+if (existsSync(join(scratch, 'public', '39a73e7c4264b418baa6757d20446910.txt'))) {
+  fail('retired demo IndexNow key file still present — DEMO_PUBLIC_FILES regression');
+}
 const en = JSON.parse(readFileSync(join(scratch, 'src/locales/en.json'), 'utf8'));
 const checks = [
   ['home.meta.title is a string', typeof en.home?.meta?.title === 'string'],

@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import {
   DEMO_ADSTERRA_UNIT_MARKERS,
   DEMO_ARTICLE_IMAGES,
@@ -23,6 +23,7 @@ import {
   DEMO_DOMAINS,
   DEMO_GAME_NAMES,
   DEMO_GALLERY_IMAGES,
+  DEMO_INDEXNOW_KEY_FILE,
   DEMO_PUBLIC_FILES,
   DEMO_VAR_VALUES,
   buildLocaleLabels,
@@ -156,6 +157,30 @@ describe('rewriteWranglerVars is value-aware (a re-run must not wipe the user en
     expect(out).toContain('PUBLIC_GISCUS_CATEGORY = "General"');
     expect(out).toContain('PUBLIC_CF_BEACON_TOKEN = "cf-beacon-user"');
     expect(out).toContain('PUBLIC_GISCUS_MAPPING = "pathname"');
+  });
+
+  test('keys outside the template are preserved verbatim and warned about (audit round 21 P2-2)', () => {
+    // The template cannot know a fork's custom vars; silently dropping them
+    // on a re-run was the destructive direction (values never committed to
+    // git were unrecoverable). Preserved lines re-emit byte-for-byte, so the
+    // rewrite stays idempotent; each one warns on stderr.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const withCustom = USER_WRANGLER.replace(
+        '[env.production]',
+        'PUBLIC_TWITTER_HANDLE = "@mygame"\nDISCORD_INVITE = "abc123"\n\n[env.production]',
+      );
+      const out = rewriteWranglerVars(makeInput(), withCustom)!;
+      expect(out).toContain('PUBLIC_TWITTER_HANDLE = "@mygame"');
+      expect(out).toContain('DISCORD_INVITE = "abc123"');
+      expect(out).toContain('# Custom [vars] keys the template does not know are preserved verbatim.');
+      expect(warn.mock.calls.some(([m]) => String(m).includes('PUBLIC_TWITTER_HANDLE'))).toBe(true);
+      expect(warn.mock.calls.some(([m]) => String(m).includes('DISCORD_INVITE'))).toBe(true);
+      const out2 = rewriteWranglerVars(makeInput(), out)!;
+      expect(out2).toBe(out);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   test('a user value on a commented-out slot re-emits the line uncommented (they enabled it)', () => {
@@ -351,9 +376,14 @@ describe('demo asset inventories stay in sync with setup.yml (drift has shipped 
 
   test('every demo public file is covered by the content registry (no silent-keep holes)', () => {
     for (const rel of DEMO_PUBLIC_FILES) {
-      if (rel === 'google8362d9398114b66b.html') continue;
+      // The exact-name files (search-console token, retired pre-env IndexNow
+      // key file) have no content marker — their identity IS the name.
+      if (rel === 'google8362d9398114b66b.html' || rel === DEMO_INDEXNOW_KEY_FILE) continue;
       expect(DEMO_ADSTERRA_UNIT_MARKERS, `${rel} has no demo unit marker`).toHaveProperty(rel);
     }
+    // The retired key file is deleted by exact name regardless of content —
+    // forks initialized from older trees must lose it on the next rerun.
+    expect(isDemoPublicFileContent(DEMO_INDEXNOW_KEY_FILE, 'any content')).toBe(true);
     // Registry keys must match the shipped demo unit files — a regenerated
     // demo key without updating the registry would silently keep demo
     // residue in forks (isDemoPublicFileContent defaults to keep).

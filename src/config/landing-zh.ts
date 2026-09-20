@@ -30,7 +30,7 @@ export const zh: LandingContent = {
   description:
     '开源游戏 wiki 模板 + AI 原生内容工作流:选对游戏、和 AI 对话就能产页、codes 页自动保鲜。Lighthouse 4×100、Cloudflare 免费部署、广告收入 100% 归你。',
   announcement: {
-    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：第 21 轮全项目审计发现全部修复。IndexNow key 从此只认环境变量——已退役的 demo key 文件删除，手工命令自动读取本地 .env；wrangler [vars] 重写改为保留模板外自定义键，不再静默丢弃；Initialize workflow 的失败不再被吞成绿灯。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
+    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：第三次全项目代码审查 25 项发现全部修复。重点：重跑 Initialize 不再清空你在 wrangler.toml 里填的环境值；新选语言不再缺 76 个 UI 键、fork CI 不再必红；移动端锚条广告的关闭钮不再被「回到顶部」按钮挡住。新增门禁：分类字段↔目录一致性比对、首页兑换码高亮↔codes 页自动对账。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
     href: RELEASES,
     dismissLabel: '关闭公告',
   },

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.35.0] — 2026-09-20
+
 ### Changed
 
 - **setup.yml 的 [vars] python 通道升级为值感知**（第三次三维代码审查高-1；JS 通道 v2.29.0 同类洞的残留，两审查代理独立命中）：原实现把整个 `[vars]` 段替换为空白模板、只有模板外未知键保留——fork 用户填好的 Giscus/GA/Adsterra/CF beacon/INDEXNOW_KEY 在重跑 Initialize（工作流自己宣传的流程）时被静默清空，且 GITHUB_TOKEN PR 不触发 CI、workflow 内 build 因组件 env 门控照常绿，合并即评论/统计/广告静默熄火。现按 JS 通道 `rewriteWranglerVars` 同口径解析现值（双引号含转义/单引号/裸标量/行尾注释；注释态槽位有值时翻正），非空且非 demo 值原样回填，SITE_URL 恒随输入；JS 通道的 Giscus 'Announcements' 配对规则一并折入（防首跑半残配置）。python 内 demo 值集合标注为 `DEMO_VAR_VALUES` 镜像，`tests/workflows.test.ts` 新增行为级契约（真执行 python3：用户值存活/demo 值重置/未知键存活/二跑字节幂等）+ 双通道 demo 值漂移守卫（import 注册表比对硬编码集合）。
@@ -1293,7 +1295,8 @@ This release covers everything since v0.2.0: the full PRD roadmap (v1.1–v2.0) 
 - Docs: PRD (1600+ lines), deployment, apply-template (4-step guide), content-format, seo, ads, migration-from-nextjs
 - Build: 27 pages, typecheck 0 errors
 
-[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.34.0...HEAD
+[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.35.0...HEAD
+[2.35.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.34.0...v2.35.0
 [2.34.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.1...v2.34.0
 [2.33.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.0...v2.33.1
 [2.33.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.32.0...v2.33.0

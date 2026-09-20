@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.33.1] — 2026-09-20
+
+### Changed
+
+- **CI actions 三件套升级 Node 24 运行时 pin**（第 20 轮 24h 审计信息级闭环；fork 常规 merge 零迁移）：六个 workflow 共 24 处 pin 更新——`actions/checkout` v4→v5.1.0、`actions/setup-node` v4→v6.5.0、`pnpm/action-setup` v4→v6.1.0，全部经所选 tag 的 `action.yml` `runs.using: node24` 逐一实证，消除 runner 的「Node 20 deprecated, forced to Node 24」警告。跨版本逐一裁决：checkout 有意不上 v6/v7（v6 把凭据持久化改写独立文件、v7 封锁 `workflow_run` 事件的 fork checkout——与 `indexnow.yml` 钉 `head_sha` 的设计存在无法被本地门禁覆盖的交互面；v5 发布说明唯一变化即 node24 运行时 + runner 最低版 v2.327.1）；setup-node 跳过 v5（v5 对 `packageManager` 字段启用自动缓存，与显式 `cache: pnpm` 存在冲突面；v6 起自动缓存仅限 npm，对本仓惰性）；pnpm/action-setup 取 v6（唯一功能变化=支持 pnpm 11，正对本仓工具链；`version: 11.1.1` 显式传入不受影响）；`peter-evans/create-pull-request` 现有 v8 pin 实证本就 node24，不动。`workflows.test.ts` 的「40-hex SHA 钉死 + 每动作全仓单 SHA」两契约测试天然钉回归。
+- **IndexNow key 轮换面文档化**（同轮信息级）：`DEMO_VAR_VALUES` 的 demo IndexNow key 条目注释扩为四处轮换面（`wrangler.toml [vars]`〔漂移守卫钉住〕、GitHub Actions variable、本地 `.env`、注册表本体——后两处仓外无守卫）；`docs/deployment.md` IndexNow 节新增「key 轮换」小节：三处活跃副本必须同步更新，生产侧任一处漏改会让自动推送因「等不到对应 `<key>.txt` 上线」响亮失败，不会静默提交。
+
+### Added
+
+- **路线图候选池新增「Cloudflare Pages → Workers 迁移评估」条目**：2026-09-19 评估**定案暂不迁**——一票否决=Workers 的 `wrangler.toml` `[vars]` 只进 runtime 不进构建期，正中 apply-template「env 单源在构建期读取」设计与 GA/广告/评论全套 env 门控契约（ADR-003 维持 Pages 默认）；次因=Workers 自定义域要求域名 NS 托管在 Cloudflare（外部 NS 不支持）。重开触发=Cloudflare 公布 Pages 停服时间表或 Workers 支持构建期 vars；在此之前 fork 用户零动作。
+
 ## [2.33.0] — 2026-09-18
 
 ### Added
@@ -1239,7 +1250,8 @@ This release covers everything since v0.2.0: the full PRD roadmap (v1.1–v2.0) 
 - Docs: PRD (1600+ lines), deployment, apply-template (4-step guide), content-format, seo, ads, migration-from-nextjs
 - Build: 27 pages, typecheck 0 errors
 
-[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.0...HEAD
+[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.1...HEAD
+[2.33.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.0...v2.33.1
 [2.33.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.31.1...v2.32.0
 [2.31.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.31.0...v2.31.1

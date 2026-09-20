@@ -18,7 +18,7 @@ export const en: LandingContent = {
   description:
     'An open-source game wiki template with an AI-native content workflow: pick the right game, generate pages by talking to your AI tool, codes pages stay fresh on autopilot. Lighthouse 4×100, free on Cloudflare, 100% ad revenue yours.',
   announcement: {
-    text: `AnvilWiki template update log (v${PROJECT_VERSION}): CI action pins upgraded to Node 24 runtimes (checkout v5 / setup-node v6 / pnpm-action v6 across all six workflows — deprecation warnings gone, zero fork impact; checkout deliberately held at v5, adjudication in the changelog). IndexNow key rotation is now documented: Cloudflare build, Actions variable and local .env must rotate together. Pages→Workers migration assessed and deferred until build-time vars land. Forks: merge upstream and pnpm install as usual. This bar tracks template releases — details & full changelog on GitHub Releases.`,
+    text: `AnvilWiki template update log (v${PROJECT_VERSION}): audit round 21 hardening, all findings fixed. IndexNow keys are env-only now — the retired demo key file is gone, the manual command reads your local .env, and wrangler [vars] rewrites preserve custom keys instead of silently dropping them. The init workflow no longer masks failures as green. Forks: merge upstream and pnpm install as usual. This bar tracks template releases — details & full changelog on GitHub Releases.`,
     href: RELEASES,
     dismissLabel: 'Dismiss announcement',
   },

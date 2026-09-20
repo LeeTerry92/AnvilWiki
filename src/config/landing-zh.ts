@@ -30,7 +30,7 @@ export const zh: LandingContent = {
   description:
     '开源游戏 wiki 模板 + AI 原生内容工作流:选对游戏、和 AI 对话就能产页、codes 页自动保鲜。Lighthouse 4×100、Cloudflare 免费部署、广告收入 100% 归你。',
   announcement: {
-    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：CI action 三件套升级 Node 24 运行时 pin（checkout v5 / setup-node v6 / pnpm-action v6，六个 workflow 24 处——弃用警告清零，fork 零迁移；checkout 有意留在 v5，裁决见 changelog）。IndexNow key 轮换面已文档化：Cloudflare 生产构建、Actions variable、本地 .env 三处必须同步换。Pages→Workers 迁移已评估，定案暂不迁（Workers 缺构建期 vars）。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
+    text: `AnvilWiki 模板更新日志（v${PROJECT_VERSION}）：第 21 轮全项目审计发现全部修复。IndexNow key 从此只认环境变量——已退役的 demo key 文件删除，手工命令自动读取本地 .env；wrangler [vars] 重写改为保留模板外自定义键，不再静默丢弃；Initialize workflow 的失败不再被吞成绿灯。fork 用户 merge 上游、照常 pnpm install 即可。本条为模板发版通告，非站点故障；详情与完整变更见 GitHub Releases。`,
     href: RELEASES,
     dismissLabel: '关闭公告',
   },

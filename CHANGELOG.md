@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **workflows.test 的 python 契约测试加 python3 可用性守卫**（第 22 轮 24h 只读风险审计信息级①；本轮五类高置信风险零发现）：`setup.yml [vars] python 通道行为级契约`真执行 python3，无 python3 的开发机（典型=裸 Windows）上 `spawnSync` ENOENT 使 `res.status` 为 null、五个执行型测试以费解的 `python rewrite failed:\nnull` 直接红——现以 `python3 --version` 探测，不可用则整组 skip（注释写明缘由），纯字符串契约（DEMO_VALUES↔DEMO_VAR_VALUES 漂移守卫、YAML 形状断言）不受影响照跑；CI ubuntu 恒有 python3，门禁强度零变化，仅本地体验从「红」变「明确跳过」。
+- **buildHomePreset 的 pickHref 替换按 preferred 键记忆化**（第 22 轮 24h 只读风险审计信息级②）：codes preset 有两个 "codes" 槽位（快开卡 + explore「Active codes」高亮），原实现各槽独立选「首个未占用类」——4 类全选且不含 codes 时先到的槽占住 cats[0]、后到的槽落到 cats[3]，两个 codes 槽指向不同替换页且警告重复发两遍。现同 preferred 键恒同替换页（`substituted` Map 记忆化），警告收敛为一次。`tests/apply-template.test.ts` 新增两槽一致性契约 + codes 入选基线不变契约。
+
 ## [2.35.0] — 2026-09-20
 
 ### Changed

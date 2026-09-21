@@ -419,6 +419,43 @@ describe('rewriteLocaleJson clones the default locale for brand-new files (fresh
   });
 });
 
+describe('home preset pickHref substitution is consistent per preferred key (round-22 audit)', () => {
+  // The codes preset has TWO "codes" slots (quickstart card + explore
+  // highlight). Independent "first unclaimed" picks used to diverge them
+  // once earlier slots had claimed categories: with 4 chosen categories and
+  // no codes, the card landed on cats[0] while the highlight fell through
+  // to cats[3]. Substitution is memoized per key, so every slot for one
+  // category lands on ONE page.
+  const fourWithoutCodes = [
+    { key: 'items', icon: 'lucide:package' },
+    { key: 'guides', icon: 'lucide:book-open' },
+    { key: 'tier-list', icon: 'lucide:bar-chart-3' },
+    { key: 'bosses', icon: 'lucide:swords' },
+  ];
+
+  const codesCardHref = (home: { start: { cards: Array<{ title: string; href: string }> } }): string =>
+    home.start.cards.find((c) => c.title === 'Codes')!.href;
+  const codesModuleHref = (home: {
+    explore: { modules: Array<{ name: string; href: string }> };
+  }): string => home.explore.modules.find((m) => m.name === 'Active codes')!.href;
+
+  test('both "codes" slots land on the SAME substituted page (4 chosen categories, no codes)', () => {
+    const out = JSON.parse(
+      rewriteLocaleJson(makeInput({ homePreset: 'codes', categories: fourWithoutCodes }), 'en', 2026),
+    ) as { home: { start: { cards: Array<{ title: string; href: string }> }; explore: { modules: Array<{ name: string; href: string }> } } };
+    expect(codesCardHref(out.home)).toBe('/items');
+    expect(codesModuleHref(out.home)).toBe(codesCardHref(out.home));
+  });
+
+  test('codes chosen ⇒ both slots point at /codes (baseline unchanged)', () => {
+    const out = JSON.parse(rewriteLocaleJson(makeInput(), 'en', 2026)) as {
+      home: { start: { cards: Array<{ title: string; href: string }> }; explore: { modules: Array<{ name: string; href: string }> } };
+    };
+    expect(codesCardHref(out.home)).toBe('/codes');
+    expect(codesModuleHref(out.home)).toBe('/codes');
+  });
+});
+
 describe('home preset hrefs resolve to chosen categories (no dead links on the fork homepage)', () => {
   const hrefsOf = (home: {
     start: { cards: { href: string }[] };

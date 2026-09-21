@@ -185,12 +185,22 @@ function buildHomePreset(input: SkinInput): Record<string, unknown> | null {
   // about that tree separately). Each real substitution warns on stderr; the
   // copy around it stays the user-editable placeholder it always was.
   const claimed: string[] = [];
+  // The same preferred key can appear in several slots (the codes preset has
+  // two "codes" slots: quickstart card + explore highlight). Substitution is
+  // memoized per key so both slots land on ONE page — without the memo, each
+  // call re-ran "first unclaimed" and a 4-category choice without codes
+  // diverged them (earlier slots had claimed more categories by then). Also
+  // collapses the duplicate per-slot warnings to one.
+  const substituted = new Map<string, string>();
   const pickHref = (preferred: string): string => {
     if (cats.includes(preferred)) {
       if (!claimed.includes(preferred)) claimed.push(preferred);
       return `/${preferred}`;
     }
+    const memo = substituted.get(preferred);
+    if (memo !== undefined) return `/${memo}`;
     const actual = cats.find((c) => !claimed.includes(c)) ?? cats[0] ?? preferred;
+    substituted.set(preferred, actual);
     if (actual !== preferred) {
       claimed.push(actual);
       console.warn(

@@ -394,6 +394,12 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
   // only surfaced as a dead site after merge. These tests EXECUTE the
   // heredoc the runner executes (extracted from the parsed YAML, so the
   // de-indentation matches what the shell receives), not its source shape.
+  // Executing requires python3, which a dev box can lack (bare Windows) —
+  // there the behavioral tests below SKIP with this probe instead of failing
+  // on spawnSync ENOENT (status null → "python rewrite failed:\nnull").
+  // CI's ubuntu runner always has python3, so the contract still runs in the
+  // gate; only the local convenience degrades, loudly and visibly.
+  const hasPython3 = spawnSync('python3', ['--version'], { encoding: 'utf8' }).status === 0;
   const extractVarsPython = (): string => {
     const wf = readWorkflow(SETUP) as Workflow;
     const step = wf.jobs?.setup?.steps?.find(
@@ -441,7 +447,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     '',
   ].join('\n');
 
-  test('user values survive, demo values reset, unknown keys survive, SITE_URL follows input', () => {
+  test.skipIf(!hasPython3)('user values survive, demo values reset, unknown keys survive, SITE_URL follows input', () => {
     // The four behaviors the JS channel has had since v2.29.0 — each one of
     // them used to be a wipe or a reset in the python twin.
     const { out } = runVarsRewrite(demoVars, 'https://mygame.wiki');
@@ -454,7 +460,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     expect(out).toContain('MY_CUSTOM_KEY = "keepme" # trailing comment');
   });
 
-  test('the paired-Announcements rule carries over (own name + own ID survives)', () => {
+  test.skipIf(!hasPython3)('the paired-Announcements rule carries over (own name + own ID survives)', () => {
     // "Announcements" is GitHub's suggested giscus category name — demo only
     // when the demo category ID sits right next to it. Wiping the name while
     // a fork's own ID survived would strand a half-reset giscus config.
@@ -467,7 +473,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     expect(out).toContain('PUBLIC_GISCUS_CATEGORY_ID = "R_myOwnId"');
   });
 
-  test('recognition covers single quotes, bare scalars and inline comments (JS-channel parity)', () => {
+  test.skipIf(!hasPython3)('recognition covers single quotes, bare scalars and inline comments (JS-channel parity)', () => {
     const handEdited =
       '[vars]\nSITE_URL = "https://x.wiki"\nPUBLIC_GA_ID = G-123 # prod\nPUBLIC_CF_BEACON_TOKEN = \'literal\'\n';
     const { out } = runVarsRewrite(handEdited);
@@ -480,7 +486,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     expect(out).toContain('PUBLIC_CF_BEACON_TOKEN = "literal"');
   });
 
-  test("a second run on the first run's output is byte-identical (idempotent)", () => {
+  test.skipIf(!hasPython3)("a second run on the first run's output is byte-identical (idempotent)", () => {
     const first = runVarsRewrite(demoVars, 'https://mygame.wiki').out;
     expect(runVarsRewrite(first, 'https://mygame.wiki').out).toBe(first);
   });
@@ -497,7 +503,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     expect(pyValues).toEqual([...DEMO_VAR_VALUES].sort());
   });
 
-  test('the FORKER warning block is actually removed (real-header fixture), and absence warns instead of failing', () => {
+  test.skipIf(!hasPython3)('the FORKER warning block is actually removed (real-header fixture), and absence warns instead of failing', () => {
     // Pinned against the REAL shipping header (authors.ts precedent): if the
     // wrangler.toml anchors drift, this goes red instead of the workflow
     // silently leaving a block that lies about the file still being demo.

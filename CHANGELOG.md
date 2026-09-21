@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.35.1] — 2026-09-21
+
 ### Fixed
 
 - **workflows.test 的 python 契约测试加 python3 可用性守卫**（第 22 轮 24h 只读风险审计信息级①；本轮五类高置信风险零发现）：`setup.yml [vars] python 通道行为级契约`真执行 python3，无 python3 的开发机（典型=裸 Windows）上 `spawnSync` ENOENT 使 `res.status` 为 null、五个执行型测试以费解的 `python rewrite failed:\nnull` 直接红——现以 `python3 --version` 探测，不可用则整组 skip（注释写明缘由），纯字符串契约（DEMO_VALUES↔DEMO_VAR_VALUES 漂移守卫、YAML 形状断言）不受影响照跑；CI ubuntu 恒有 python3，门禁强度零变化，仅本地体验从「红」变「明确跳过」。
@@ -1300,7 +1302,8 @@ This release covers everything since v0.2.0: the full PRD roadmap (v1.1–v2.0) 
 - Docs: PRD (1600+ lines), deployment, apply-template (4-step guide), content-format, seo, ads, migration-from-nextjs
 - Build: 27 pages, typecheck 0 errors
 
-[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.35.0...HEAD
+[Unreleased]: https://github.com/PNGTRID/AnvilWiki/compare/v2.35.1...HEAD
+[2.35.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.35.0...v2.35.1
 [2.35.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.34.0...v2.35.0
 [2.34.0]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.1...v2.34.0
 [2.33.1]: https://github.com/PNGTRID/AnvilWiki/compare/v2.33.0...v2.33.1

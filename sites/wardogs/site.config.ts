@@ -5,6 +5,7 @@ export const site: SiteConfig = {
   projectLanding: false,
   articlePathMode: 'flat',
   brandMark: 'W',
+  logoPath: '/logo.svg',
   name: 'WARDOGS Field Guide',
   shortName: 'WARDOGS',
   description:

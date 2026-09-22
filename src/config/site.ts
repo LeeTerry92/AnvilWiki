@@ -14,6 +14,8 @@ export interface SiteConfig {
   articlePathMode?: 'category' | 'flat';
   /** 共用页头和页脚使用的紧凑字标。 */
   brandMark?: string;
+  /** 站点 public 目录中的页头和页脚标志资源。 */
+  logoPath?: string;
   /** Full site name, used in <title> suffix and Organization JSON-LD. e.g. "Anvil Quest Wiki" */
   name: string;
   /** Short name for PWA manifest, mobile logo, and the long-title <title> suffix (>50 chars). e.g. "AQ Wiki" */

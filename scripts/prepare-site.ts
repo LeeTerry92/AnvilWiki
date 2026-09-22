@@ -20,6 +20,33 @@ for (const required of [
   }
 }
 
+for (const asset of [
+  'logo.svg',
+  'favicon.svg',
+  'favicon.ico',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+  'apple-touch-icon.png',
+  'android-chrome-192x192.png',
+  'android-chrome-512x512.png',
+  'manifest.json',
+  'images/hero.webp',
+]) {
+  if (!fs.existsSync(path.join(activeSitePaths.public, asset))) {
+    throw new Error(`[site] ${activeSiteId} is missing its own public/${asset}`);
+  }
+}
+
+// 启用广告变量时，单元页面必须来自本站目录，不使用根 public/ 兜底。
+for (const [key, value] of Object.entries(process.env)) {
+  const prefix = 'PUBLIC_ADSTERRA_SLOT_';
+  if (!key.startsWith(prefix) || !value) continue;
+  const unit = key.slice(prefix.length).toLowerCase().replace(/_/g, '-');
+  if (!fs.existsSync(path.join(activeSitePaths.public, 'ads', `${unit}.html`))) {
+    throw new Error(`[site] ${activeSiteId} enables ${key} but is missing its own public/ads/${unit}.html`);
+  }
+}
+
 const generatedRoot = path.dirname(activeSitePaths.generatedPublic);
 fs.rmSync(generatedRoot, { recursive: true, force: true });
 fs.mkdirSync(activeSitePaths.generatedPublic, { recursive: true });

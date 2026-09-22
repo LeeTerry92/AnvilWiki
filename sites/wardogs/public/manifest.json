@@ -1,11 +1,11 @@
 {
-  "name": "War Dogs Wiki",
-  "short_name": "WD Wiki",
-  "description": "War Dogs tactical guides, loadouts, routes, and supply codes.",
+  "name": "WARDOGS Field Guide",
+  "short_name": "WARDOGS",
+  "description": "An unofficial WARDOGS field guide covering Early Access gameplay, weapons, maps, updates and player support with source and version notes.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#287a4d",
+  "theme_color": "#288654",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

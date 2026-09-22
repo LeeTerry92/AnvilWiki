@@ -18,7 +18,7 @@ sites/wardogs/
 ├── assets/              # 文章封面等构建期资源
 ├── theme.css            # 本站品牌色、明暗主题与字体栈
 ├── wrangler.toml         # 本站构建期变量
-└── public/              # 图标、manifest、hero 等静态资源
+└── public/              # 本站 logo、favicon、广告单元和其他静态资源
 ```
 
 `src/` 是所有站点共享的核心框架。不要把某个游戏的品牌判断写进公共组件；普通差异放进配置和首页区块，只有首页结构确实特殊时才使用 `home.override.astro`。
@@ -38,16 +38,16 @@ SITE_ID=wardogs pnpm refresh-audit
 SITE_ID=wardogs pnpm gen-covers
 ```
 
-构建前 `prepare:site` 会把公共 `_headers`、本站 `theme.css` 与本站 `public/` 合并到 `.generated/<site-id>/public/`。验证文件、广告单元、图标和品牌图片不会从其他站点继承。公共布局和组件样式仍在 `src/styles/globals.css`；每站只在 `theme.css` 中维护品牌色和字体栈，独有组件的样式保留在组件内。
+构建前 `prepare:site` 会把公共 `_headers`、本站 `theme.css` 与本站 `public/` 合并到 `.generated/<site-id>/public/`。页头和页脚的 logo 使用本站 `public/logo.svg`；favicon、PWA 图标、分享图和广告单元也只从本站 `public/` 读取。缺少必需图标，或启用了 `PUBLIC_ADSTERRA_SLOT_*` 却没有本站对应的 `public/ads/<name>.html`，构建会失败。根目录 `public/` 仅供未设置 `SITE_ID` 的旧单站模式使用，不会进入多站构建。公共布局和组件样式仍在 `src/styles/globals.css`；每站只在 `theme.css` 中维护品牌色和字体栈，独有组件的样式保留在组件内。
 
 生成图标、默认分享图和文章封面时也要带上站点标识：
 
 ```bash
-SITE_ID=wardogs pnpm gen-assets
+SITE_ID=wardogs pnpm gen-assets --icons-only
 SITE_ID=wardogs pnpm gen-covers
 ```
 
-这两个命令从本站 `theme.css` 取品牌色。`gen-assets` 写入本站 `public/` 并按站点保存缓存；未设置 `SITE_ID` 时仍沿用旧单站目录和 `globals.css`。
+这两个命令从本站 `theme.css` 取品牌色。`gen-assets --icons-only` 更新 logo、favicon、PWA 图标和 manifest 主题色，不覆盖本站的分享图；不带该参数时也生成默认分享图。`gen-assets` 写入本站 `public/` 并按站点保存缓存；未设置 `SITE_ID` 时仍沿用旧单站目录和 `globals.css`。广告单元文件只放在需要投放的站点 `public/ads/` 下；例如 WARDOGS 没有启用广告，就无需建立该目录。
 
 当前 `SITE_ID` 只限制为小写字母、数字和连字符；不存在的站点会在准备阶段因缺少必要目录而失败。首期不提供站点脚手架，新增站点时以现有站点目录为模板并逐项替换。
 

@@ -10,6 +10,8 @@ export interface SiteConfig {
   theme?: 'default' | 'tactical';
   /** Keep the AnvilWiki project marketing pages in this site's build. */
   projectLanding?: boolean;
+  /** 本站 public 目录中的页头和页脚标志资源。 */
+  logoPath?: string;
   /** Full site name, used in <title> suffix and Organization JSON-LD. e.g. "Anvil Quest Wiki" */
   name: string;
   /** Short name for PWA manifest, mobile logo, and the long-title <title> suffix (>50 chars). e.g. "AQ Wiki" */
@@ -66,6 +68,7 @@ export interface SiteConfig {
 }
 
 export const site: SiteConfig = {
+  logoPath: '/logo.svg',
   theme: 'default',
   projectLanding: true,
   name: 'Anvil Quest Wiki',

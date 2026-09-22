@@ -44,3 +44,54 @@ describe('siteBuildEnv', () => {
     expect(() => siteBuildEnv('../wardogs', root, {})).toThrow('Invalid site ID');
   });
 });
+
+describe('站点静态资源', () => {
+  test('两个站点各自拥有完整且不同的 logo 和 favicon', () => {
+    const assets = [
+      'logo.svg',
+      'favicon.svg',
+      'favicon.ico',
+      'favicon-16x16.png',
+      'favicon-32x32.png',
+      'apple-touch-icon.png',
+      'android-chrome-192x192.png',
+      'android-chrome-512x512.png',
+      'manifest.json',
+      'images/hero.webp',
+    ];
+    for (const siteId of ['anvil-quest', 'wardogs']) {
+      for (const asset of assets) {
+        expect(existsSync(join(root, 'sites', siteId, 'public', asset))).toBe(true);
+      }
+    }
+    for (const asset of ['logo.svg', 'favicon.svg', 'favicon.ico', 'android-chrome-512x512.png']) {
+      const anvil = readFileSync(join(root, 'sites/anvil-quest/public', asset));
+      const wardogs = readFileSync(join(root, 'sites/wardogs/public', asset));
+      expect(wardogs.equals(anvil), `${asset} should use the WARDOGS brand`).toBe(false);
+    }
+  });
+
+  test('Anvil 广告文件只由 Anvil 配置引用，WARDOGS 未启用广告', () => {
+    const anvil = siteBuildEnv('anvil-quest', root, {});
+    const wardogs = siteBuildEnv('wardogs', root, {});
+    const adVars = Object.entries(anvil).filter(
+      ([key, value]) => key.startsWith('PUBLIC_ADSTERRA_SLOT_') && value,
+    );
+    expect(adVars).toHaveLength(6);
+    for (const [key] of adVars) {
+      const unit = key.slice('PUBLIC_ADSTERRA_SLOT_'.length).toLowerCase().replace(/_/g, '-');
+      expect(existsSync(join(root, 'sites/anvil-quest/public/ads', `${unit}.html`))).toBe(true);
+      expect(wardogs[key]).toBe('');
+    }
+    expect(existsSync(join(root, 'sites/wardogs/public/ads'))).toBe(false);
+  });
+
+  test('WARDOGS 的 PWA 品牌与站点配置一致', () => {
+    const manifest = JSON.parse(
+      readFileSync(join(root, 'sites/wardogs/public/manifest.json'), 'utf8'),
+    ) as { name: string; short_name: string; theme_color: string };
+    expect(manifest.name).toBe('WARDOGS Field Guide');
+    expect(manifest.short_name).toBe('WARDOGS');
+    expect(manifest.theme_color).toBe('#288654');
+  });
+});

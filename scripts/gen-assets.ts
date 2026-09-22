@@ -7,7 +7,9 @@
  *
  * 多站模式写入 sites/<id>/public/；未设置 SITE_ID 时沿用根 public/。
  * 文件名与页面引用保持一致：
+ *   public/logo.svg                       页头与页脚使用的品牌标志
  *   public/favicon.svg                    brand square + game initial (SVG <text>)
+ *   public/favicon.ico                    PNG 图标合成的多尺寸 ICO
  *   public/favicon-16x16.png              ┐
  *   public/favicon-32x32.png              │ satori-rendered 512 square,
  *   public/apple-touch-icon.png (180)     │ sharp-resized per size
@@ -19,9 +21,7 @@
  * Fonts: same pipeline as gen-covers — bundled OFL Lato for Latin, Noto Sans
  * CJK SC (downloaded once, subset per glyph) when the initial is CJK.
  *
- * favicon.ico is NOT regenerated (sharp cannot emit ICO). After this script
- * BaseLayout points browsers at favicon.svg/PNG, so the stale .ico is simply
- * never requested; delete it manually if you want.
+ * --icons-only 只更新 logo 和 favicon，不覆盖已有的分享图。
  *
  * Cache: node_modules/.cache/gen-assets/manifest.json (stableHash of inputs;
  * cache lives OUTSIDE public/ so nothing extra ever ships to production).
@@ -33,6 +33,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
+import pngToIco from 'png-to-ico';
 import subsetFont from 'subset-font';
 import { activeSiteId, isPlatformBuild } from '~/platform/site-context';
 import { scriptSitePaths } from './lib/active-site-paths';
@@ -46,6 +47,7 @@ const site = siteModule.default ?? siteModule.site;
 const FONT_CACHE = join(root, 'node_modules/.cache/gen-covers/fonts');
 const MANIFEST_VERSION = 1;
 const FORCE = process.argv.includes('--force');
+const ICONS_ONLY = process.argv.includes('--icons-only');
 
 const NOTO_BASE = 'https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF';
 
@@ -138,21 +140,18 @@ async function main() {
 
   console.log(`\n🎨 gen-assets — ${PUBLIC_LABEL}, brand ${brandHex}, initial "${initial}"\n`);
 
-  // 1. favicon.svg — handwritten SVG (browser renders the <text> with its own
-  //    system fonts; no font embedding needed at this size).
-  const svgHash = cacheKey('favicon.svg', brandHex, initial);
-  if (fresh('favicon.svg', svgHash)) {
-    writeFileSync(
-      join(PUBLIC, 'favicon.svg'),
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${initial}</text></svg>\n`,
-    );
-    manifest['favicon.svg'] = svgHash;
-    console.log(`  ✅ ${PUBLIC_LABEL}/favicon.svg`);
+  const svgHash = cacheKey('brand-mark.svg', brandHex, initial);
+  if (fresh('brand-mark.svg', svgHash)) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${initial}</text></svg>\n`;
+    for (const name of ['logo.svg', 'favicon.svg']) {
+      writeFileSync(join(PUBLIC, name), svg);
+      console.log(`  ✅ ${PUBLIC_LABEL}/${name}`);
+    }
+    manifest['brand-mark.svg'] = svgHash;
   }
 
-  // 2. PNG favicons — one 512px satori render, sharp-resized per size.
-  const pngHash = cacheKey('favicon-png', brandHex, initial);
-  if (fresh('favicon-png', pngHash)) {
+  const pngHash = cacheKey('favicon-png-and-ico', brandHex, initial);
+  if (fresh('favicon-png-and-ico', pngHash)) {
     const fonts = await fontsFor(initial);
     const png512 = await renderPng(
       {
@@ -184,18 +183,23 @@ async function main() {
       ['android-chrome-192x192.png', 192],
       ['android-chrome-512x512.png', 512],
     ];
+    const icoPngs: Buffer[] = [];
     for (const [name, size] of sizes) {
       const buf =
         size === 512 ? png512 : await sharp(png512).resize(size, size, { fit: 'contain' }).png().toBuffer();
       writeFileSync(join(PUBLIC, name), buf);
+      if (size === 16 || size === 32) icoPngs.push(buf);
       console.log(`  ✅ ${PUBLIC_LABEL}/${name} (${size}×${size})`);
     }
-    manifest['favicon-png'] = pngHash;
+    icoPngs.push(await sharp(png512).resize(48, 48).png().toBuffer());
+    writeFileSync(join(PUBLIC, 'favicon.ico'), await pngToIco(icoPngs));
+    console.log(`  ✅ ${PUBLIC_LABEL}/favicon.ico`);
+    manifest['favicon-png-and-ico'] = pngHash;
   }
 
-  // 3. hero.webp — 1200×630 brand gradient + site name (the default og:image).
+  // 只更新图标时保留站点已有的分享图。
   const heroHash = cacheKey('hero.webp', brandHex, brandDeep, heroTitle);
-  if (fresh('hero.webp', heroHash)) {
+  if (!ICONS_ONLY && fresh('hero.webp', heroHash)) {
     const fonts = await fontsFor(heroTitle + gameName);
     const png = await renderPng(
       {
@@ -260,7 +264,7 @@ async function main() {
   }
 
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-  console.log('\n✅ Done. favicon.ico is intentionally left as-is (see script header).\n');
+  console.log('\n✅ Done.\n');
 }
 
 main().catch((err) => {

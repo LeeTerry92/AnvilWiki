@@ -1,0 +1,420 @@
+{
+  "$schema": "../../../docs/home.schema.json",
+  "site": {
+    "name": "WARDOGS Field Guide",
+    "shortName": "WARDOGS",
+    "description": "An unofficial WARDOGS field guide for Early Access gameplay, weapons, maps, updates and player support.",
+    "tagline": "Three forces. One moving objective.",
+    "legalNotice": "Unofficial fan guide. Not affiliated with BULKHEAD or Team17."
+  },
+  "nav": {
+    "home": "Home",
+    "guides": "Guides",
+    "weapons": "Weapons",
+    "maps": "Maps",
+    "updates": "Updates",
+    "toggleTheme": "Toggle theme",
+    "menu": "Menu",
+    "close": "Close",
+    "search": "Search",
+    "language": "Language"
+  },
+  "search": {
+    "placeholder": "Search the wiki...",
+    "noResults": "No matches found",
+    "loadError": "Search failed to load — refresh the page and try again."
+  },
+  "shared": {
+    "lastUpdated": "Last updated",
+    "publishedOn": "Published",
+    "noArticles": "No articles yet. Check back soon!",
+    "defaultListDescription": "Browse every {title} article — walkthroughs, tips, tier lists and up-to-date reference tables, all in one place.",
+    "relatedArticles": "Related Articles",
+    "onThisPage": "On this page",
+    "browseAll": "Browse all",
+    "viewAll": "View all",
+    "commentsHeading": "Comments",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "consentText": "We use cookies for analytics and ads to keep this site free.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "consentTitle": "Cookies",
+    "bossCard": {
+      "title": "Boss Overview",
+      "hp": "HP",
+      "weakness": "Weakness",
+      "resistant": "Resistant",
+      "location": "Location",
+      "level": "Rec. Level"
+    },
+    "codesTable": {
+      "active": "Active Codes",
+      "expired": "Expired Codes",
+      "reward": "Reward",
+      "expires": "Expires",
+      "source": "Source",
+      "code": "Code"
+    },
+    "codesFaq": [
+      {
+        "question": "How do I redeem codes?",
+        "answer": "Open the game, click the settings gear in the top-right, paste your code into the Redeem Code field, and confirm. Codes are case-sensitive."
+      },
+      {
+        "question": "Why do codes stop working?",
+        "answer": "Codes expire on a schedule set by the developer (usually monthly or tied to update milestones), and some are one-per-account. This page is re-tested regularly."
+      },
+      {
+        "question": "How often are new codes released?",
+        "answer": "New codes typically arrive with each major game update. Bookmark this page and check back after every patch."
+      },
+      {
+        "question": "Do codes expire?",
+        "answer": "Yes — most codes have an expiry date, shown next to each code. Expired codes move to the expired table below."
+      }
+    ],
+    "possiblyOutdated": "This guide was last checked on",
+    "outdatedNote": "— the game may have changed since. Some details could be out of date.",
+    "prevArticle": "Previous",
+    "nextArticle": "Next",
+    "minuteRead": "min read",
+    "wasThisHelpful": "Was this helpful?",
+    "feedbackThanks": "Thanks for the feedback!",
+    "sponsoredLabel": "Sponsored",
+    "relatedVideos": "Related videos",
+    "gallery": "Gallery",
+    "gameVersion": "Game version",
+    "allTags": "All Tags",
+    "tagsIndexDescription": "Browse all articles by topic.",
+    "articlesCount": "articles",
+    "recentTitle": "Recent Updates",
+    "recentDescription": "The latest articles and updates across the wiki, newest first.",
+    "sponsorTitle": "Support this wiki",
+    "sponsorText": "If these guides helped you, consider supporting the site.",
+    "sponsorButton": "Support us",
+    "notFoundSearchHint": "Try searching the wiki instead.",
+    "notFoundPopular": "Popular pages",
+    "galleryLabels": {
+      "close": "Close",
+      "prev": "Previous image",
+      "next": "Next image"
+    },
+    "quickAnswer": "Quick Answer",
+    "skipToContent": "Skip to content",
+    "tapToCopy": "Tap to copy",
+    "open": "Open",
+    "playVideo": "Play video",
+    "watchVideo": "Watch video",
+    "gameTrailer": "trailer",
+    "closeAd": "Close ad",
+    "adLabel": "Advertisement",
+    "codesFaqTitle": "Codes FAQ",
+    "faqTitle": "FAQ",
+    "toggleTheme": "Toggle theme",
+    "themeToggleTitle": "Light / Dark / AMOLED black",
+    "fallbackNotice": "English fallback",
+    "copyQuickAnswer": "Copy quick answer",
+    "feedbackYes": "Yes",
+    "feedbackNo": "No",
+    "breadcrumbAria": "Breadcrumb",
+    "wikiNavAria": "Wiki navigation",
+    "paginationAria": "Article pagination"
+  },
+  "overview": {
+    "guides": {
+      "overviewTitle": "All Guides",
+      "overviewDescription": "Objective, cash, roles, vehicles, building and troubleshooting guides for WARDOGS Early Access."
+    },
+    "weapons": {
+      "overviewTitle": "Weapons",
+      "overviewDescription": "Community test-build weapon records, with source and version limits kept explicit."
+    },
+    "maps": {
+      "overviewTitle": "Maps",
+      "overviewDescription": "Terrain references for Bakurani, Ozeti and Zestafona, including historical working-name locations."
+    },
+    "updates": {
+      "overviewTitle": "Updates",
+      "overviewDescription": "Release status, patch notes and roadmap information with dated source checks."
+    }
+  },
+  "home": {
+    "meta": {
+      "title": "War Dogs Wiki - Complete Boss Guides, Codes & Tier Lists",
+      "description": "The most complete War Dogs wiki. Boss strategies, active codes, item locations, tier lists, and beginner guides. Every page shows when it was last verified."
+    },
+    "hero": {
+      "badge": "Fan-Made Community Wiki",
+      "title": "War Dogs Wiki",
+      "description": "Your complete guide to War Dogs. Boss strategies, active codes, item locations, tier lists, and everything you need to master the forge.",
+      "ctaPrimary": "Play War Dogs",
+      "ctaSecondary": "Browse Guides",
+      "videoId": ""
+    },
+    "updates": {
+      "title": "Recent Updates"
+    },
+    "start": {
+      "badge": "Start Here",
+      "title": "Your War Dogs Journey",
+      "cards": [
+        {
+          "number": "1",
+          "title": "Beginner Guide",
+          "description": "New to War Dogs? Start here with the essential mechanics, controls, and your first hour walkthrough.",
+          "icon": "lucide:book-open",
+          "href": "/guides/beginner-guide"
+        },
+        {
+          "number": "2",
+          "title": "Active Codes",
+          "description": "Redeem the latest codes for free coins, gems, and exclusive cosmetic items.",
+          "icon": "lucide:gift",
+          "href": "/codes"
+        },
+        {
+          "number": "3",
+          "title": "Boss Strategies",
+          "description": "Complete guides for every boss with attack patterns, weaknesses, and recommended loadouts.",
+          "icon": "lucide:swords",
+          "href": "/bosses"
+        },
+        {
+          "number": "4",
+          "title": "Weapon Tier List",
+          "description": "Ranking every weapon from S to C based on DPS, utility, and synergy.",
+          "icon": "lucide:list-ordered",
+          "href": "/guides/weapon-tier-list"
+        }
+      ]
+    },
+    "popular": {
+      "badge": "Trending Now",
+      "title": "Most Read This Week",
+      "quickLinks": [
+        {
+          "label": "Emberfang Boss Guide",
+          "href": "/bosses/emberfang"
+        },
+        {
+          "label": "Best Weapons Tier List",
+          "href": "/guides/weapon-tier-list"
+        },
+        {
+          "label": "Beginner Guide",
+          "href": "/guides/beginner-guide"
+        },
+        {
+          "label": "All Active Codes",
+          "href": "/codes"
+        }
+      ]
+    },
+    "explore": {
+      "title": "Explore the Wiki",
+      "description": "Everything you need, organized by category. Pick a topic and dive in.",
+      "modules": [
+        {
+          "order": 1,
+          "name": "War Dogs Codes",
+          "description": "Active codes for free coins, gems, and exclusive items. Updated daily.",
+          "href": "/codes",
+          "displayType": "badge-list",
+          "highlights": [
+            {
+              "label": "EMBERFALL-2026",
+              "detail": "+400 Gold · expires Sep 30",
+              "badge": "Active"
+            },
+            {
+              "label": "ASHENKEEP",
+              "detail": "Ashen Keep cosmetic set",
+              "badge": "Active"
+            },
+            {
+              "label": "NEWPLAYER",
+              "detail": "Starter bundle (new accounts)",
+              "badge": "Active"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "name": "Boss Strategies",
+          "description": "Complete guides for every boss with attack patterns and weaknesses.",
+          "href": "/bosses",
+          "displayType": "labeled-cards",
+          "highlights": [
+            {
+              "label": "Emberfang",
+              "detail": "Frost warden, early-game gatekeeper"
+            },
+            {
+              "label": "Stormcaller",
+              "detail": "Fire titan, mid-game DPS check"
+            },
+            {
+              "label": "Voidking",
+              "detail": "Final boss, requires full prep"
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "name": "Progression Guides",
+          "description": "Leveling routes, class builds, and endgame preparation.",
+          "href": "/guides",
+          "displayType": "steps",
+          "highlights": [
+            {
+              "label": "1",
+              "detail": "Pick a starting class"
+            },
+            {
+              "label": "2",
+              "detail": "Clear the tutorial forge"
+            },
+            {
+              "label": "3",
+              "detail": "Unlock the Shattered Isles"
+            },
+            {
+              "label": "4",
+              "detail": "Defeat your first world boss"
+            }
+          ]
+        },
+        {
+          "order": 4,
+          "name": "Weapon Tier List",
+          "description": "Ranking every weapon from S to C based on DPS, utility, and synergy.",
+          "href": "/guides/weapon-tier-list",
+          "displayType": "ranked-grid",
+          "highlights": [
+            {
+              "label": "S",
+              "detail": "Voidforge Blade, Stormcaller"
+            },
+            {
+              "label": "A",
+              "detail": "Emberclaw, Frostpike"
+            },
+            {
+              "label": "B",
+              "detail": "Ironwood Bow, Mace of Dawn"
+            },
+            {
+              "label": "C",
+              "detail": "Starter weapons"
+            }
+          ]
+        },
+        {
+          "order": 5,
+          "name": "Update History",
+          "description": "Major patches and events, newest first.",
+          "href": "/recent",
+          "displayType": "timeline",
+          "highlights": [
+            {
+              "label": "v2.5",
+              "detail": "New raid: Shadowforge released",
+              "badge": "Latest"
+            },
+            {
+              "label": "v2.4",
+              "detail": "Rebalanced all S-tier weapons"
+            },
+            {
+              "label": "v2.3",
+              "detail": "Added 3 new bosses"
+            },
+            {
+              "label": "v2.2",
+              "detail": "Launched season pass system"
+            }
+          ]
+        },
+        {
+          "order": 6,
+          "name": "Video Guides",
+          "description": "Watch the best War Dogs walkthroughs and boss fights.",
+          "href": "/guides",
+          "displayType": "video-grid",
+          "highlights": [
+            {
+              "title": "Beginner Walkthrough",
+              "youtubeId": "dQw4w9WgXcQ",
+              "duration": "12:34"
+            },
+            {
+              "title": "All Bosses Ranked",
+              "youtubeId": "aaaaaaaaaaa",
+              "duration": "18:42"
+            },
+            {
+              "title": "Speedrun Guide",
+              "youtubeId": "bbbbbbbbbbb",
+              "duration": "25:10"
+            },
+            {
+              "title": "Hidden Secrets",
+              "youtubeId": "ccccccccccc",
+              "duration": "9:15"
+            }
+          ]
+        }
+      ]
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Source-checked answers about WARDOGS Early Access and the scope of this field guide.",
+      "items": [
+        {
+          "question": "What is WARDOGS?",
+          "answer": "WARDOGS is a tactical first-person shooter on Steam with up to 100 players across three teams, a moving Control Zone, persistent cash, vehicles and building."
+        },
+        {
+          "question": "Does WARDOGS have fixed classes?",
+          "answer": "No. The developer FAQ says equipment and vehicles define your role. This guide does not claim an independently tested best loadout."
+        },
+        {
+          "question": "How do you win a match?",
+          "answer": "Have the most players inside the Control Zone at each 30-second scoring check. The first team to 100 points wins."
+        },
+        {
+          "question": "Is WARDOGS free to play?",
+          "answer": "No. WARDOGS is a paid Steam Early Access game. Check Steam for current regional pricing and editions."
+        },
+        {
+          "question": "Are beta-era weapon values current?",
+          "answer": "Not verified. The weapon catalogue labels community test-build data separately from confirmed Early Access information."
+        }
+      ]
+    },
+    "closingCta": {
+      "title": "Ready to Master the Forge?",
+      "description": "Bookmark this wiki and check back daily for new codes, boss guides, and tier list updates.",
+      "primary": "Play War Dogs",
+      "secondary": "Join Our Discord"
+    }
+  },
+  "footer": {
+    "playGame": "Official WARDOGS site",
+    "officialDiscord": "Official Discord",
+    "officialYoutube": "Official YouTube",
+    "officialTwitter": "Official Twitter",
+    "officialReddit": "Official Reddit",
+    "about": "About",
+    "faq": "FAQ",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "Copyright",
+    "contact": "Contact",
+    "copyrightText": "© 2026 WARDOGS Field Guide. Unofficial fan project.",
+    "community": "Community",
+    "legal": "Legal"
+  }
+}

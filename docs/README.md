@@ -21,6 +21,7 @@
 | [comments.md](comments.md) | 接入 Giscus 评论 | 需要评论的站长 |
 | [content-pipeline.md](content-pipeline.md) | PR 门控内容管道:关键词清单 → 草稿 PR(AI 写 → 人审 → merge,v2.0) | 想批量铺内容的站长 |
 | [multi-site.md](multi-site.md) | 多站运营:anvilwiki-ops 1.0 一套工具管 N 个站 + AI 引用追踪(v2.0) | 从第二个站开始的站长 |
+| [platform-sites.md](platform-sites.md) | 单仓库多游戏站：SITE_ID、首页区块、独立构建与 Pages 配置 | 平台维护者 |
 | [staying-up-to-date.md](staying-up-to-date.md) | fork 之后怎么同步上游更新 | fork 用户(长期) |
 | [migration-from-nextjs.md](migration-from-nextjs.md) | 从 Next.js 模板迁移 | 迁移用户 |
 | [development.md](development.md) | 给模板本身写代码:架构、模式、验证、发版 | 贡献者 / 模板开发者 |

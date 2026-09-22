@@ -29,12 +29,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readDefaultLocale, readLocales } from './lib/routing-flags';
 import { walkFiles } from './lib/walk';
+import { scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
 const STRICT = process.argv.includes('--strict');
 const STRICT_UI = process.argv.includes('--strict-ui');
-const CONTENT_BASE = path.resolve(ROOT, 'src/content/wiki');
-const LOCALES_DIR = path.resolve(ROOT, 'src/locales');
+const CONTENT_BASE = scriptSitePaths.content;
+const LOCALES_DIR = scriptSitePaths.locales;
 
 // --- Locales from routing.ts (shared reader in scripts/lib/routing-flags.ts) ---
 const locales = readLocales(ROOT);

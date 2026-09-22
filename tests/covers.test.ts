@@ -4,6 +4,8 @@
  * script — these pin the deterministic logic only.
  */
 import { describe, expect, test } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   coverFilename,
   hasCjk,
@@ -20,6 +22,20 @@ import {
 } from '~/lib/covers';
 
 describe('parseBrandHsl / hslToHex', () => {
+  test('两站主题分别提供品牌色和字体，旧模式保留默认值', () => {
+    const read = (file: string) => readFileSync(resolve(file), 'utf8');
+    const anvil = read('sites/anvil-quest/theme.css');
+    const wardogs = read('sites/wardogs/theme.css');
+    const legacy = read('src/styles/globals.css');
+    expect(parseBrandHsl(anvil)).toEqual({ h: 22, s: 90, l: 52 });
+    expect(parseBrandHsl(wardogs)).toEqual({ h: 148, s: 54, l: 34 });
+    expect(parseBrandHsl(legacy)).toEqual({ h: 22, s: 90, l: 52 });
+    for (const theme of [anvil, wardogs]) {
+      expect(theme).toContain('--site-font-body:');
+      expect(theme).toContain('--site-font-heading:');
+    }
+    expect(legacy).not.toContain("data-site-theme='tactical'");
+  });
   test('parses the light-mode --brand declaration', () => {
     const css = ':root {\n  --brand: 22 90% 52%;\n  --brand-light: 22 90% 62%;\n}';
     expect(parseBrandHsl(css)).toEqual({ h: 22, s: 90, l: 52 });

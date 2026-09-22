@@ -153,6 +153,32 @@ describe('ci.yml uses the shared gates + runs the ops toolkit', () => {
     const e2e = job?.steps?.find((s) => /test:e2e/.test(s.run ?? ''));
     expect(e2e?.run).toContain('pnpm test:e2e');
   });
+
+  test('platform site matrix typechecks and builds both isolated sites', () => {
+    const ci = readWorkflow(CI) as {
+      jobs?: Record<
+        string,
+        {
+          steps?: Step[];
+          strategy?: { matrix?: { include?: Array<{ site?: string; 'site-url'?: string }> } };
+          env?: Record<string, string>;
+        }
+      >;
+    };
+    const job = ci.jobs?.['platform-sites'];
+    expect(job).toBeDefined();
+    expect(job?.strategy?.matrix?.include?.map((item) => item.site)).toEqual([
+      'anvil-quest',
+      'wardogs',
+    ]);
+    expect(job?.env).toEqual({
+      SITE_ID: '${{ matrix.site }}',
+      SITE_URL: '${{ matrix.site-url }}',
+    });
+    const commands = job?.steps?.map((step) => step.run).filter(Boolean);
+    expect(commands).toContain('pnpm typecheck');
+    expect(commands).toContain('pnpm build');
+  });
 });
 
 describe('IndexNow production automation contract', () => {

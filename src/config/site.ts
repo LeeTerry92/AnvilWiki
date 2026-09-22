@@ -6,6 +6,14 @@
  */
 
 export interface SiteConfig {
+  /** Shared visual preset. Site-specific CSS variables key off this value. */
+  theme?: 'default' | 'tactical';
+  /** Keep the AnvilWiki project marketing pages in this site's build. */
+  projectLanding?: boolean;
+  /** 文章使用站点根路径，分类索引路径保持不变。 */
+  articlePathMode?: 'category' | 'flat';
+  /** 共用页头和页脚使用的紧凑字标。 */
+  brandMark?: string;
   /** Full site name, used in <title> suffix and Organization JSON-LD. e.g. "Anvil Quest Wiki" */
   name: string;
   /** Short name for PWA manifest, mobile logo, and the long-title <title> suffix (>50 chars). e.g. "AQ Wiki" */
@@ -62,6 +70,8 @@ export interface SiteConfig {
 }
 
 export const site: SiteConfig = {
+  theme: 'default',
+  projectLanding: true,
   name: 'Anvil Quest Wiki',
   shortName: 'AQ Wiki',
   description:

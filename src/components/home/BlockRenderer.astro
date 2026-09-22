@@ -1,0 +1,32 @@
+---
+import HeroBlock from './blocks/HeroBlock.astro';
+import QuickStartBlock from './blocks/QuickStartBlock.astro';
+import RecentBlock from './blocks/RecentBlock.astro';
+import ExploreBlock from './blocks/ExploreBlock.astro';
+import FaqBlock from './blocks/FaqBlock.astro';
+import CtaBlock from './blocks/CtaBlock.astro';
+import type { Locale } from '~/i18n/routing';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  sections: HomeBlock[];
+  locale: Locale;
+}
+
+const { sections, locale } = Astro.props;
+
+export const blockRegistry = {
+  hero: HeroBlock,
+  'quick-start': QuickStartBlock,
+  recent: RecentBlock,
+  explore: ExploreBlock,
+  faq: FaqBlock,
+  cta: CtaBlock,
+};
+---
+
+{sections.map((section) => {
+  const Component = blockRegistry[section.type];
+  return <Component block={section} locale={locale} />;
+})}
+

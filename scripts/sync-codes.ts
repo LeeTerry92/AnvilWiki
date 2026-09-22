@@ -47,9 +47,11 @@ import {
   type CodesCsvRow,
   type MergeStats,
 } from './lib/sync-codes';
+import { displayPath, scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
-const CONTENT_BASE = path.resolve(ROOT, 'src/content/wiki');
+const CONTENT_BASE = scriptSitePaths.content;
+const CONTENT_LABEL = displayPath(CONTENT_BASE);
 const ARGS = process.argv.slice(2);
 const DRY_RUN = ARGS.includes('--dry-run') || ARGS.includes('-n');
 // Used by auto-content.yml: a run that changes 0 pages (empty list, every
@@ -200,7 +202,7 @@ interface Planned {
 const planned: Planned[] = [];
 const fileErrors: string[] = [];
 for (const [key, group] of fan.groups) {
-  const label = `src/content/wiki/${key.replace('/', '/codes/')}.mdx`;
+  const label = `${CONTENT_LABEL}/${key.replace('/', '/codes/')}.mdx`;
   const filePath = path.join(CONTENT_BASE, key.split('/')[0], 'codes', `${key.split('/')[1]}.mdx`);
   if (!fs.existsSync(filePath)) {
     fileErrors.push(`${label} — target page does not exist (sync never creates pages; create it first)`);

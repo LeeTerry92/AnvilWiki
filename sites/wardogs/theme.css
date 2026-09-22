@@ -1,0 +1,18 @@
+/* 站点品牌和字体；专属首页、地图和武器目录样式留在各自组件内。 */
+:root[data-site-theme='tactical'] {
+  --brand: 148 54% 34%;
+  --brand-light: 148 48% 46%;
+  --brand-h: 148;
+  --brand-s: 54%;
+  --brand-text: 148 58% 28%;
+  --site-font-body: 'Avenir Next', 'Segoe UI', Arial, sans-serif;
+  --site-font-heading: 'Avenir Next Condensed', 'Arial Narrow', 'Avenir Next', Arial, sans-serif;
+}
+
+:root.dark[data-site-theme='tactical'] {
+  --brand: 148 48% 42%;
+  --brand-light: 148 46% 56%;
+  --brand-h: 148;
+  --brand-s: 48%;
+  --brand-text: 148 52% 58%;
+}

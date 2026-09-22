@@ -21,12 +21,13 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { scriptSitePaths } from './active-site-paths';
 
 /** routing.ts path relative to the repo root (every caller's cwd). */
 const ROUTING_REL = 'src/i18n/routing.ts';
 
 function readRoutingSrc(root: string): string {
-  const file = path.resolve(root, ROUTING_REL);
+  const file = root === process.cwd() ? scriptSitePaths.routing : path.resolve(root, ROUTING_REL);
   try {
     return fs.readFileSync(file, 'utf8');
   } catch {

@@ -32,9 +32,10 @@ import { todayIso } from './lib/today';
 import { STALE_AFTER_DAYS, STALE_CATEGORIES } from '~/lib/content-utils';
 import { walkFiles } from './lib/walk';
 import * as path from 'node:path';
+import { scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
-const BASE = path.resolve(ROOT, 'src/content/wiki');
+const BASE = scriptSitePaths.content;
 
 const CODES_WARN_DAYS = 7;
 const CODES_CRITICAL_DAYS = 30;
@@ -124,7 +125,7 @@ function parseCodesFrontmatter(fm: string): { code: string; status: string }[] {
 }
 
 for (const [loc, expiredBadge] of Object.entries(EXPIRED_BADGE)) {
-  const jsonPath = path.resolve(ROOT, 'src/locales', `${loc}.json`);
+  const jsonPath = path.resolve(scriptSitePaths.locales, `${loc}.json`);
   if (!fs.existsSync(jsonPath)) continue;
   let json: Record<string, any>;
   try {
@@ -155,7 +156,7 @@ for (const [loc, expiredBadge] of Object.entries(EXPIRED_BADGE)) {
       if (fmStatus === 'expired' && !expiredBadge.test(badge)) {
         items.push({
           priority: 'P0',
-          file: `src/locales/${loc}.json`,
+          file: path.relative(ROOT, jsonPath),
           category: 'home-highlights',
           days: null,
           reason: `highlight "${label}" shows badge "${badge}" but the codes page frontmatter says expired`,
@@ -170,7 +171,7 @@ for (const [loc, expiredBadge] of Object.entries(EXPIRED_BADGE)) {
         if (!Number.isNaN(t) && t < now) {
           items.push({
             priority: 'P0',
-            file: `src/locales/${loc}.json`,
+            file: path.relative(ROOT, jsonPath),
             category: 'home-highlights',
             days: null,
             reason: `highlight "${label}" shows badge "${badge}" and its detail says "expires ${m?.[1]} ${m?.[2]}" — that date has passed`,

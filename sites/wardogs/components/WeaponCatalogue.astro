@@ -1,0 +1,89 @@
+---
+import weapons from '../data/weapons.json';
+
+const categories = [...new Set(weapons.map((weapon) => weapon.category))];
+---
+
+<section class="wd-catalogue" data-weapon-catalogue aria-labelledby="wd-catalogue-title">
+  <div class="wd-catalogue-heading">
+    <div>
+      <p class="wd-kicker">FIELD ARMORY / COMMUNITY TEST RECORDS</p>
+      <h2 id="wd-catalogue-title">33 recorded weapons</h2>
+    </div>
+    <span class="wd-version">Not launch-confirmed · reviewed Sep 9, 2026</span>
+  </div>
+  <div class="wd-filters">
+    <label>Find a weapon or calibre <input type="search" data-weapon-search placeholder="M4, 9×19, shotgun..." /></label>
+    <label>Weapon category <select data-weapon-category><option value="">All categories</option>{categories.map((category) => <option value={category}>{category}</option>)}</select></label>
+  </div>
+  <p class="wd-count" data-weapon-count role="status">{weapons.length} of {weapons.length} weapons</p>
+  <div class="wd-list">
+    {weapons.map((weapon) => (
+      <details data-weapon-row data-name={weapon.name.toLowerCase()} data-category={weapon.category} data-calibre={weapon.calibre.toLowerCase()}>
+        <summary><span><strong>{weapon.name}</strong><small>{weapon.category} · {weapon.calibre}</small></span><span>{weapon.price}<b aria-hidden="true">+</b></span></summary>
+        <div class="wd-detail">
+          <dl>{Object.entries(weapon.stats).map(([key, value]) => <div><dt>{key}</dt><dd>{value}</dd></div>)}</dl>
+          <a href={weapon.source} target="_blank" rel="noreferrer">Community record ↗</a>
+          <p>Community test-build record only. Current Early Access prices and balance require in-game verification.</p>
+        </div>
+      </details>
+    ))}
+  </div>
+  <p class="wd-empty" data-weapon-empty hidden>No matching weapon records.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-weapon-catalogue]').forEach((catalogue) => {
+    const search = catalogue.querySelector<HTMLInputElement>('[data-weapon-search]');
+    const category = catalogue.querySelector<HTMLSelectElement>('[data-weapon-category]');
+    const rows = [...catalogue.querySelectorAll<HTMLElement>('[data-weapon-row]')];
+    const count = catalogue.querySelector<HTMLElement>('[data-weapon-count]');
+    const empty = catalogue.querySelector<HTMLElement>('[data-weapon-empty]');
+    const update = () => {
+      const query = search?.value.trim().toLowerCase() ?? '';
+      const selected = category?.value ?? '';
+      let shown = 0;
+      rows.forEach((row) => {
+        const matches = (!selected || row.dataset.category === selected) &&
+          (!query || `${row.dataset.name} ${row.dataset.calibre}`.includes(query));
+        row.hidden = !matches;
+        if (matches) shown++;
+      });
+      if (count) count.textContent = `${shown} of ${rows.length} weapons`;
+      if (empty) empty.hidden = shown !== 0;
+    };
+    search?.addEventListener('input', update);
+    category?.addEventListener('change', update);
+  });
+</script>
+
+<style>
+  .wd-catalogue{margin:2rem 0;border:1px solid #374443;background:#14201f;color:#eef3ee;font-family:var(--site-font-body)}
+  .wd-catalogue-heading{display:flex;justify-content:space-between;gap:1rem;align-items:end;padding:1.5rem;border-bottom:1px solid #374443}
+  .wd-kicker{color:#e4a451;font-size:.7rem;font-weight:800;letter-spacing:.12em;margin:0 0 .4rem}
+  .wd-catalogue h2{color:#fff;font-size:1.35rem;margin:0;line-height:1.2}
+  .wd-version{color:#b9c6bc;font-size:.72rem;text-align:right}
+  .wd-filters{display:grid;grid-template-columns:1fr 14rem;gap:.75rem;padding:1rem 1.5rem}
+  .wd-filters label{display:grid;gap:.35rem;color:#bdc8c0;font-size:.75rem;font-weight:700}
+  .wd-filters input,.wd-filters select{min-width:0;width:100%;border:1px solid #53635c;border-radius:2px;background:#0d1716;color:#fff;padding:.7rem;font:inherit}
+  .wd-filters input:focus,.wd-filters select:focus{outline:2px solid #e4a451;outline-offset:1px}
+  .wd-count{padding:0 1.5rem;color:#aebdb1;font-size:.75rem}
+  .wd-list{max-height:42rem;overflow:auto;border-top:1px solid #374443}
+  .wd-list details{border-bottom:1px solid #374443}
+  .wd-list details[hidden]{display:none}
+  .wd-list summary{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.85rem 1.5rem;cursor:pointer;list-style:none}
+  .wd-list summary::-webkit-details-marker{display:none}
+  .wd-list summary:hover{background:#1d2d29}
+  .wd-list summary span:first-child{display:grid;gap:.1rem}
+  .wd-list strong{font-size:.9rem}
+  .wd-list small{font-size:.72rem;color:#afc0b1}
+  .wd-list summary span:last-child{white-space:nowrap;font-size:.8rem;font-weight:700}
+  .wd-list b{padding-left:1rem;color:#e4a451}
+  .wd-detail{padding:.1rem 1.5rem 1rem;background:#0e1918}
+  .wd-detail dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:.8rem 0}
+  .wd-detail dl div{border-left:2px solid #e4a451;padding-left:.65rem}
+  .wd-detail dt{font-size:.7rem;color:#b4c0b7}.wd-detail dd{margin:0;font-size:.88rem;font-weight:700}
+  .wd-detail a{color:#e4a451;font-size:.78rem}.wd-detail p{color:#aebdb1;font-size:.72rem;margin:.5rem 0 0}
+  .wd-empty{padding:1rem 1.5rem}
+  @media(max-width:600px){.wd-catalogue-heading{display:block}.wd-version{display:block;text-align:left;margin-top:.5rem}.wd-filters{grid-template-columns:1fr}.wd-detail dl{grid-template-columns:1fr}}
+</style>

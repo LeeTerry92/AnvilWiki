@@ -1,0 +1,15 @@
+---
+import QuickStart from '~/components/home/QuickStart.astro';
+import type { Locale } from '~/i18n/routing';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  block: HomeBlock;
+  locale: Locale;
+}
+
+const { block, locale } = Astro.props;
+if (block.type !== 'quick-start') throw new Error(`QuickStartBlock cannot render ${block.type}`);
+---
+
+<QuickStart locale={locale} badge={block.badge} title={block.title} cards={block.cards} />

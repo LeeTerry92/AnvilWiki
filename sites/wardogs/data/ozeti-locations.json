@@ -1,0 +1,332 @@
+[
+  {
+    "name": "Apartment Garages",
+    "grid": "J11",
+    "left": 59.11300000000001,
+    "top": 62.759
+  },
+  {
+    "name": "Apartments",
+    "grid": "J11",
+    "left": 59.463,
+    "top": 63.382000000000005
+  },
+  {
+    "name": "Church Top",
+    "grid": "K11",
+    "left": 62.910999999999994,
+    "top": 62.624
+  },
+  {
+    "name": "Deforested 1",
+    "grid": "J10",
+    "left": 62.434999999999995,
+    "top": 58.989000000000004
+  },
+  {
+    "name": "Farm 1",
+    "grid": "J10",
+    "left": 59.272999999999996,
+    "top": 61.253
+  },
+  {
+    "name": "Farm 2",
+    "grid": "J10",
+    "left": 60.29,
+    "top": 58.843999999999994
+  },
+  {
+    "name": "Farm 3",
+    "grid": "K10",
+    "left": 64.591,
+    "top": 60.538000000000004
+  },
+  {
+    "name": "Farm 4",
+    "grid": "K10",
+    "left": 66.131,
+    "top": 60.76200000000001
+  },
+  {
+    "name": "Farm 5",
+    "grid": "J11",
+    "left": 58.328,
+    "top": 62.758
+  },
+  {
+    "name": "Farm 6",
+    "grid": "J11",
+    "left": 56.762,
+    "top": 62.814
+  },
+  {
+    "name": "Farm 7",
+    "grid": "J10",
+    "left": 57.374,
+    "top": 61.919000000000004
+  },
+  {
+    "name": "Farm 8",
+    "grid": "J10",
+    "left": 57.705,
+    "top": 60.621
+  },
+  {
+    "name": "Farm 9",
+    "grid": "J10",
+    "left": 57.035000000000004,
+    "top": 60.016999999999996
+  },
+  {
+    "name": "Forest 1",
+    "grid": "J11",
+    "left": 61.974,
+    "top": 64.881
+  },
+  {
+    "name": "Forest 10",
+    "grid": "J11",
+    "left": 56.399,
+    "top": 65.012
+  },
+  {
+    "name": "Forest 11",
+    "grid": "J11",
+    "left": 57.562000000000005,
+    "top": 64.19399999999999
+  },
+  {
+    "name": "Forest 12",
+    "grid": "J10",
+    "left": 61.833000000000006,
+    "top": 58.19800000000001
+  },
+  {
+    "name": "Forest 13",
+    "grid": "J10",
+    "left": 58.95,
+    "top": 59.598
+  },
+  {
+    "name": "Forest 2",
+    "grid": "J11",
+    "left": 60.022,
+    "top": 63.851
+  },
+  {
+    "name": "Forest 3",
+    "grid": "J10",
+    "left": 60.356,
+    "top": 60.09100000000001
+  },
+  {
+    "name": "Forest 4",
+    "grid": "K10",
+    "left": 63.476,
+    "top": 59.496
+  },
+  {
+    "name": "Forest 5",
+    "grid": "K11",
+    "left": 65.336,
+    "top": 65.346
+  },
+  {
+    "name": "Forest 6",
+    "grid": "K11",
+    "left": 64.455,
+    "top": 67.009
+  },
+  {
+    "name": "Forest 7",
+    "grid": "J11",
+    "left": 60.882000000000005,
+    "top": 66.838
+  },
+  {
+    "name": "Forest 8",
+    "grid": "J11",
+    "left": 57.813,
+    "top": 67.318
+  },
+  {
+    "name": "Forest 9",
+    "grid": "I11",
+    "left": 55.745,
+    "top": 66.259
+  },
+  {
+    "name": "Grassland 1",
+    "grid": "K11",
+    "left": 67.486,
+    "top": 62.961999999999996
+  },
+  {
+    "name": "Hillside Church 1",
+    "grid": "J11",
+    "left": 62.242,
+    "top": 63.161
+  },
+  {
+    "name": "Hillside Church 2",
+    "grid": "K10",
+    "left": 63.548,
+    "top": 61.894000000000005
+  },
+  {
+    "name": "Hillside Church 3",
+    "grid": "K11",
+    "left": 63.266,
+    "top": 63.355
+  },
+  {
+    "name": "Hillside Church 4",
+    "grid": "K10",
+    "left": 63.848000000000006,
+    "top": 62.41
+  },
+  {
+    "name": "Hillside Church 5",
+    "grid": "K11",
+    "left": 64.859,
+    "top": 63.113
+  },
+  {
+    "name": "Hillside Church 6",
+    "grid": "K10",
+    "left": 65.28399999999999,
+    "top": 61.968
+  },
+  {
+    "name": "Industrial 1",
+    "grid": "J11",
+    "left": 56.45099999999999,
+    "top": 63.937
+  },
+  {
+    "name": "Lumberyard",
+    "grid": "K11",
+    "left": 62.999,
+    "top": 65.479
+  },
+  {
+    "name": "Misc Stadium Front",
+    "grid": "J10",
+    "left": 61.039,
+    "top": 61.812
+  },
+  {
+    "name": "Misc Stadium Parking",
+    "grid": "J10",
+    "left": 60.18,
+    "top": 61.538000000000004
+  },
+  {
+    "name": "Pool",
+    "grid": "J10",
+    "left": 62.305,
+    "top": 60.982
+  },
+  {
+    "name": "Residential 1",
+    "grid": "J11",
+    "left": 60.692,
+    "top": 63.047
+  },
+  {
+    "name": "Residential 2",
+    "grid": "J10",
+    "left": 61.536,
+    "top": 62.248000000000005
+  },
+  {
+    "name": "Residential 3",
+    "grid": "K10",
+    "left": 63.169,
+    "top": 61.192
+  },
+  {
+    "name": "Residential 4",
+    "grid": "K10",
+    "left": 63.731,
+    "top": 60.419999999999995
+  },
+  {
+    "name": "Residential 5",
+    "grid": "J10",
+    "left": 61.583,
+    "top": 60.62499999999999
+  },
+  {
+    "name": "Residential 6",
+    "grid": "J10",
+    "left": 61.846000000000004,
+    "top": 59.984
+  },
+  {
+    "name": "Residential 7",
+    "grid": "K11",
+    "left": 64.06500000000001,
+    "top": 63.771
+  },
+  {
+    "name": "Residential 8",
+    "grid": "K11",
+    "left": 62.796,
+    "top": 63.888
+  },
+  {
+    "name": "Residential 9",
+    "grid": "J11",
+    "left": 60.339,
+    "top": 64.756
+  },
+  {
+    "name": "Shops 1",
+    "grid": "J10",
+    "left": 62.036,
+    "top": 61.687999999999995
+  },
+  {
+    "name": "Shops 2",
+    "grid": "K10",
+    "left": 63.046,
+    "top": 60.572
+  },
+  {
+    "name": "Stadium",
+    "grid": "J10",
+    "left": 60.784000000000006,
+    "top": 61.207
+  },
+  {
+    "name": "Stadium Garages",
+    "grid": "J10",
+    "left": 60.463,
+    "top": 60.353
+  },
+  {
+    "name": "Tower 1",
+    "grid": "J11",
+    "left": 59.548,
+    "top": 62.787000000000006
+  },
+  {
+    "name": "Tower 2",
+    "grid": "J11",
+    "left": 62.37200000000001,
+    "top": 64.98899999999999
+  },
+  {
+    "name": "Tower 3",
+    "grid": "K10",
+    "left": 64.897,
+    "top": 62.258
+  },
+  {
+    "name": "Tower 4",
+    "grid": "K10",
+    "left": 62.573,
+    "top": 59.925
+  }
+]

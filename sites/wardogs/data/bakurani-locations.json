@@ -1,0 +1,362 @@
+[
+  {
+    "name": "Abandoned TWR 1",
+    "grid": "H12",
+    "left": 44.667,
+    "top": 68.75
+  },
+  {
+    "name": "Abandoned TWR 2",
+    "grid": "H12",
+    "left": 47.269,
+    "top": 72.397
+  },
+  {
+    "name": "Abandoned TWR 3",
+    "grid": "H11",
+    "left": 48.366,
+    "top": 63.67699999999999
+  },
+  {
+    "name": "Abandoned TWR 4",
+    "grid": "I11",
+    "left": 53.589,
+    "top": 65.991
+  },
+  {
+    "name": "Apartment Hillside",
+    "grid": "H12",
+    "left": 49.164,
+    "top": 73.26899999999999
+  },
+  {
+    "name": "Apartments",
+    "grid": "H12",
+    "left": 49.334,
+    "top": 70.446
+  },
+  {
+    "name": "Bridge Hill",
+    "grid": "H11",
+    "left": 47.611,
+    "top": 66.85799999999999
+  },
+  {
+    "name": "Containers and Factory",
+    "grid": "H11",
+    "left": 48.611,
+    "top": 68.23
+  },
+  {
+    "name": "Forest Quarry 1",
+    "grid": "I11",
+    "left": 52.294,
+    "top": 65.283
+  },
+  {
+    "name": "Forest Quarry 2",
+    "grid": "I11",
+    "left": 53.103,
+    "top": 65.93599999999999
+  },
+  {
+    "name": "Green Farmland",
+    "grid": "G11",
+    "left": 43.264,
+    "top": 68.406
+  },
+  {
+    "name": "Green Mountain",
+    "grid": "H11",
+    "left": 44.822,
+    "top": 67.85
+  },
+  {
+    "name": "Hill Town",
+    "grid": "H11",
+    "left": 48.43,
+    "top": 65.598
+  },
+  {
+    "name": "Hillside Houses",
+    "grid": "H12",
+    "left": 48.786,
+    "top": 72.272
+  },
+  {
+    "name": "Hillside Top",
+    "grid": "I12",
+    "left": 50.192,
+    "top": 72.501
+  },
+  {
+    "name": "Lumber Farmlands",
+    "grid": "I10",
+    "left": 50.412,
+    "top": 62.087
+  },
+  {
+    "name": "Lumber Hills 2",
+    "grid": "I11",
+    "left": 51.824999999999996,
+    "top": 66.38199999999999
+  },
+  {
+    "name": "Lumberyard Forest 1",
+    "grid": "I11",
+    "left": 50.973,
+    "top": 64.58
+  },
+  {
+    "name": "Lumberyard Forest 2",
+    "grid": "I11",
+    "left": 51.443000000000005,
+    "top": 63.493
+  },
+  {
+    "name": "Lumberyard Forest 3",
+    "grid": "I11",
+    "left": 52.624,
+    "top": 64.753
+  },
+  {
+    "name": "Lumberyard House",
+    "grid": "I11",
+    "left": 51.502,
+    "top": 64.22099999999999
+  },
+  {
+    "name": "Lumberyard North",
+    "grid": "I11",
+    "left": 50.576,
+    "top": 66.631
+  },
+  {
+    "name": "Lumberyard South",
+    "grid": "I11",
+    "left": 50.597,
+    "top": 65.705
+  },
+  {
+    "name": "Market Swamp",
+    "grid": "I12",
+    "left": 50.771,
+    "top": 70.257
+  },
+  {
+    "name": "Mindori Hillside 1",
+    "grid": "I11",
+    "left": 54.461000000000006,
+    "top": 66.27
+  },
+  {
+    "name": "Mindori Hillside 2",
+    "grid": "I11",
+    "left": 54.059999999999995,
+    "top": 65.119
+  },
+  {
+    "name": "Mindori Village",
+    "grid": "I11",
+    "left": 54.809,
+    "top": 67.486
+  },
+  {
+    "name": "North River",
+    "grid": "H12",
+    "left": 48.319,
+    "top": 70.306
+  },
+  {
+    "name": "Pond",
+    "grid": "H11",
+    "left": 49.315,
+    "top": 63.458000000000006
+  },
+  {
+    "name": "Red Sunflower Fields",
+    "grid": "I12",
+    "left": 55.31399999999999,
+    "top": 68.988
+  },
+  {
+    "name": "Residential",
+    "grid": "H12",
+    "left": 49.899,
+    "top": 69.11
+  },
+  {
+    "name": "Riverside Forest",
+    "grid": "H11",
+    "left": 45.94,
+    "top": 64.455
+  },
+  {
+    "name": "Scrubland East",
+    "grid": "I11",
+    "left": 50.833,
+    "top": 67.53099999999999
+  },
+  {
+    "name": "Scrubland West",
+    "grid": "H11",
+    "left": 49.808,
+    "top": 68.21000000000001
+  },
+  {
+    "name": "South Town Farmlands",
+    "grid": "H11",
+    "left": 48.073,
+    "top": 62.864
+  },
+  {
+    "name": "South Town Forest East",
+    "grid": "H11",
+    "left": 49.504,
+    "top": 64.566
+  },
+  {
+    "name": "South Town Forest West",
+    "grid": "H11",
+    "left": 47.837,
+    "top": 64.54299999999999
+  },
+  {
+    "name": "South West River",
+    "grid": "H12",
+    "left": 47.251,
+    "top": 68.77799999999999
+  },
+  {
+    "name": "Sunflower Church",
+    "grid": "I11",
+    "left": 51.884,
+    "top": 68.667
+  },
+  {
+    "name": "Sunflower North",
+    "grid": "I12",
+    "left": 53.364,
+    "top": 69.216
+  },
+  {
+    "name": "Sunflowers Center",
+    "grid": "I11",
+    "left": 52.635,
+    "top": 68.23700000000001
+  },
+  {
+    "name": "Sunflowers House",
+    "grid": "I11",
+    "left": 53.627,
+    "top": 68.242
+  },
+  {
+    "name": "Sunflowers South",
+    "grid": "I11",
+    "left": 52.751000000000005,
+    "top": 67.33200000000001
+  },
+  {
+    "name": "Sunflowers Tower",
+    "grid": "I12",
+    "left": 51.919000000000004,
+    "top": 69.61699999999999
+  },
+  {
+    "name": "Tower 1",
+    "grid": "H11",
+    "left": 49.369,
+    "top": 67.38300000000001
+  },
+  {
+    "name": "Tower 2",
+    "grid": "H11",
+    "left": 47.437000000000005,
+    "top": 67.513
+  },
+  {
+    "name": "Tower 3",
+    "grid": "H12",
+    "left": 47.385,
+    "top": 69.467
+  },
+  {
+    "name": "Tower 4",
+    "grid": "I12",
+    "left": 51.235,
+    "top": 69.273
+  },
+  {
+    "name": "Tower 5 L",
+    "grid": "I11",
+    "left": 50.449999999999996,
+    "top": 66.005
+  },
+  {
+    "name": "Tower 7",
+    "grid": "I11",
+    "left": 52.443,
+    "top": 66.13900000000001
+  },
+  {
+    "name": "Water Silos 2",
+    "grid": "H11",
+    "left": 46.543,
+    "top": 65.66199999999999
+  },
+  {
+    "name": "Water Storage Outcrop",
+    "grid": "H11",
+    "left": 45.49,
+    "top": 67.208
+  },
+  {
+    "name": "West Forest Central",
+    "grid": "H12",
+    "left": 45.655,
+    "top": 72.244
+  },
+  {
+    "name": "West Forest Hillside 1",
+    "grid": "H12",
+    "left": 44.267,
+    "top": 70.59
+  },
+  {
+    "name": "West Forest House 2",
+    "grid": "H12",
+    "left": 46.495,
+    "top": 70.963
+  },
+  {
+    "name": "West Forest House 3",
+    "grid": "H12",
+    "left": 45.379999999999995,
+    "top": 69.65400000000001
+  },
+  {
+    "name": "West Forest House 4",
+    "grid": "H12",
+    "left": 45.559,
+    "top": 70.531
+  },
+  {
+    "name": "West Forest North",
+    "grid": "H12",
+    "left": 46.107,
+    "top": 73.342
+  },
+  {
+    "name": "West Forest Pylon",
+    "grid": "H12",
+    "left": 46.394999999999996,
+    "top": 70.38499999999999
+  },
+  {
+    "name": "West Hill Woods",
+    "grid": "H12",
+    "left": 47.13,
+    "top": 70.078
+  }
+]

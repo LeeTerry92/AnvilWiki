@@ -1,24 +1,23 @@
-/**
- * HomePage ↔ en.json contract — HomePage renders straight from the locale
- * JSON `home` namespace. Before the typed-surface fix every access went
- * through `as any`, so an en.json key rename silently blanked homepage
- * blocks with zero gate failures (check-i18n only compares locale↔en, not
- * component↔en). This test regex-scans the component frontmatter+template
- * for `home.<key>[.<sub>]` accesses — including `const <alias> =
- * home.<key>` section aliases — and deep-looks every dotted path up in
- * en.json. The /faq pages' accesses through getHomeFaq() are pinned the
- * same way against `home.faq`. A key rename now fails CI here AND at
- * typecheck (getUi returns `typeof en`) instead of at a user's screen.
- */
+/** Homepage configuration, FAQ locale data, and UI type-safety contracts. */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 import en from '~/locales/en.json';
 import { getHomeFaq } from '~/i18n/ui';
+import {
+  isProjectLandingEntrypoint,
+  isProjectLandingPath,
+} from '~/platform/project-landing';
+import { homePages } from '../sites/anvil-quest/home.page';
+import { site as wardogsSite } from '../sites/wardogs/site.config';
+import weapons from '../sites/wardogs/data/weapons.json';
+import bakurani from '../sites/wardogs/data/bakurani-locations.json';
+import ozeti from '../sites/wardogs/data/ozeti-locations.json';
+import zestafona from '../sites/wardogs/data/zestafona-locations.json';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const homePage = readFileSync(join(root, 'src/components/home/HomePage.astro'), 'utf8');
+const blockRenderer = readFileSync(join(root, 'src/components/home/BlockRenderer.astro'), 'utf8');
 const faqPages = [
   'src/pages/faq.astro',
   'src/pages/[locale]/faq.astro',
@@ -38,53 +37,58 @@ function lookup(path: string): unknown {
   return cur;
 }
 
-/** Every `home.<key>[.<sub>]` literal access in the component source. */
-function directHomePaths(src: string): string[] {
-  const paths: string[] = [];
-  for (const m of src.matchAll(/home\.([A-Za-z_]\w*)(?:\??\.([A-Za-z_]\w*))?/g)) {
-    paths.push(m[2] ? `${m[1]}.${m[2]}` : m[1]);
-  }
-  return paths;
-}
-
-/** Aliases declared as `const <alias>[: Type] = home.<key>` (section namespaces). */
-function homeAliases(src: string): Map<string, string> {
-  const aliases = new Map<string, string>();
-  for (const m of src.matchAll(/const ([A-Za-z_]\w*)\s*(?::[^=]+)?=\s*home\.([A-Za-z_]\w+)/g)) {
-    aliases.set(m[1], m[2]);
-  }
-  return aliases;
-}
-
-/** All access paths: direct `home.x[.y]` literals + `<alias>.<sub>` through declared aliases. */
-function collectedHomePaths(): Set<string> {
-  const paths = new Set(directHomePaths(homePage));
-  for (const [alias, key] of homeAliases(homePage)) {
-    for (const m of homePage.matchAll(new RegExp(`\\b${alias}\\.([A-Za-z_]\\w*)`, 'g'))) {
-      paths.add(`${key}.${m[1]}`);
+describe('site homepage block contract', () => {
+  test('default site provides localized page metadata and sections', () => {
+    for (const locale of ['en', 'ja'] as const) {
+      expect(homePages[locale].meta.title.length).toBeGreaterThan(0);
+      expect(homePages[locale].meta.description.length).toBeGreaterThan(20);
+      expect(homePages[locale].sections.length).toBeGreaterThanOrEqual(4);
     }
-  }
-  return paths;
-}
-
-describe('HomePage ↔ en.json access contract', () => {
-  test('the scanner actually sees the component (sanity against silent regex rot)', () => {
-    const paths = collectedHomePaths();
-    expect(paths.size).toBeGreaterThanOrEqual(10);
-    expect(paths).toContain('meta.title');
-    expect(paths).toContain('hero.title');
-    expect(paths).toContain('start.cards');
   });
 
-  test('every home.<key>[.<sub>] access (incl. aliases) exists in en.json', () => {
-    const offenders: string[] = [];
-    for (const path of collectedHomePaths()) {
-      if (lookup(path) === undefined) offenders.push(path);
+  test('every configured block type is wired into BlockRenderer', () => {
+    const configuredTypes = new Set(
+      Object.values(homePages).flatMap((page) => page.sections.map((section) => section.type)),
+    );
+    expect(blockRenderer).toContain('export const blockRegistry');
+    for (const type of configuredTypes) {
+      expect(blockRenderer, `missing blockRegistry entry for ${type}`).toMatch(
+        new RegExp(`["']?${type}["']?\\s*:`),
+      );
     }
-    expect(
-      offenders,
-      `HomePage accesses keys missing from en.json "home":\n${offenders.join('\n')}`,
-    ).toEqual([]);
+  });
+});
+
+describe('WARDOGS 内容快照契约', () => {
+  test('公开专题与结构化数据保持完整，且使用原站根路径', () => {
+    const content = join(root, 'sites/wardogs/content/wiki/en');
+    const files = ['guides', 'weapons', 'maps', 'updates'].flatMap((category) =>
+      readdirSync(join(content, category)).filter((file) => file.endsWith('.mdx')),
+    );
+    expect(files).toHaveLength(29);
+    expect(files).toContain('wardogs-weapons.mdx');
+    expect(files).not.toContain('first-deployment.mdx');
+    expect(files).not.toContain('supply-codes.mdx');
+    expect(weapons).toHaveLength(33);
+    expect(bakurani.length + ozeti.length + zestafona.length).toBe(171);
+    expect(wardogsSite.articlePathMode).toBe('flat');
+  });
+});
+
+describe('project landing isolation contract', () => {
+  test('matches only AnvilWiki project landing URLs', () => {
+    expect(isProjectLandingPath('/landing/')).toBe(true);
+    expect(isProjectLandingPath('/landing/docs/first-article/')).toBe(true);
+    expect(isProjectLandingPath('/zh/landing/')).toBe(true);
+    expect(isProjectLandingPath('/guides/landing-zone/')).toBe(false);
+    expect(isProjectLandingPath('/ja/landing/')).toBe(false);
+  });
+
+  test('matches the corresponding Astro page entrypoints on every platform', () => {
+    expect(isProjectLandingEntrypoint('src/pages/landing.astro')).toBe(true);
+    expect(isProjectLandingEntrypoint('/repo/src/pages/landing/docs/[slug].astro')).toBe(true);
+    expect(isProjectLandingEntrypoint('C:\\repo\\src\\pages\\zh\\landing.astro')).toBe(true);
+    expect(isProjectLandingEntrypoint('/repo/src/pages/index.astro')).toBe(false);
   });
 });
 

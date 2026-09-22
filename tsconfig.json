@@ -5,7 +5,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "@site/*": ["sites/anvil-quest/*"]
     },
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,

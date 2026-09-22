@@ -12,8 +12,7 @@ export default {
     },
     extend: {
       colors: {
-        // Design tokens — driven by CSS variables in src/styles/globals.css.
-        // This lets re-theming work by changing only the 4 --brand lines.
+        // 公共规则读取 CSS 变量；多站主题变量由各站 theme.css 提供。
         border: 'hsl(var(--border))',
         input: 'hsl(var(--border))',
         ring: 'hsl(var(--brand))',
@@ -59,7 +58,7 @@ export default {
         sm: 'calc(var(--radius, 0.5rem) - 4px)',
       },
       fontFamily: {
-        sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['var(--site-font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       typography: ({ theme }) => ({
         DEFAULT: {

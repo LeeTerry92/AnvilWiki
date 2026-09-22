@@ -1,0 +1,26 @@
+---
+import { site } from '~/config/site';
+import type { Locale } from '~/i18n/routing';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  block: HomeBlock;
+  locale: Locale;
+}
+
+const { block } = Astro.props;
+if (block.type !== 'cta') throw new Error(`CtaBlock cannot render ${block.type}`);
+---
+
+<section class="section border-t border-border">
+  <div class="rounded-lg border bg-card p-8 text-center md:p-12">
+    <h2 class="text-2xl font-bold md:text-3xl">{block.title}</h2>
+    {block.description && <p class="mx-auto mt-2 max-w-xl text-muted-foreground">{block.description}</p>}
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
+      <a href={site.social.official} target="_blank" rel="noopener noreferrer" class="btn-primary">{block.primaryLabel}</a>
+      {block.secondaryLabel && site.social.discord && (
+        <a href={site.social.discord} target="_blank" rel="noopener noreferrer" class="btn-outline">{block.secondaryLabel}</a>
+      )}
+    </div>
+  </div>
+</section>

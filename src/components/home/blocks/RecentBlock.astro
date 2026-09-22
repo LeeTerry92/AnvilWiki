@@ -1,0 +1,64 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Locale } from '~/i18n/routing';
+import { getRecentEntries, parseEntryId } from '~/lib/content';
+import { detailPath, listPath, localizePath } from '~/lib/url';
+import { getUi } from '~/i18n/ui';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  block: HomeBlock;
+  locale: Locale;
+}
+
+const { block, locale } = Astro.props;
+if (block.type !== 'recent') throw new Error(`RecentBlock cannot render ${block.type}`);
+const shared = getUi(locale).shared;
+const recent = await getRecentEntries(locale, block.limit ?? 6);
+const category = block.category ?? 'guides';
+---
+
+<section class="section border-t border-border">
+  <div class="grid gap-8 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="flex items-baseline justify-between gap-4">
+        <h2 class="text-2xl font-bold">{block.title}</h2>
+        <a href={listPath(category, locale)} class="text-sm text-foreground hover:text-nav hover:underline">{shared.browseAll}</a>
+      </div>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        {recent.length === 0 ? (
+          <p class="text-sm text-muted-foreground">{shared.noArticles}</p>
+        ) : (
+          recent.map((entry) => {
+            const parsed = parseEntryId(entry.id);
+            if (!parsed) return null;
+            return (
+              <a href={detailPath(parsed.category, parsed.slug, locale)} class="card p-4">
+                <p class="text-xs uppercase tracking-wider text-muted-foreground">{parsed.category}</p>
+                <h3 class="mt-1 font-semibold leading-snug">{entry.data.title}</h3>
+                <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{entry.data.description}</p>
+              </a>
+            );
+          })
+        )}
+      </div>
+    </div>
+
+    {(block.popularLinks?.length ?? 0) > 0 && (
+      <aside>
+        {block.popularBadge && <p class="text-sm font-semibold uppercase tracking-wider text-foreground">{block.popularBadge}</p>}
+        {block.popularTitle && <h2 class="mt-1 text-2xl font-bold">{block.popularTitle}</h2>}
+        <ul class="mt-4 space-y-2">
+          {block.popularLinks?.map((link) => (
+            <li>
+              <a href={localizePath(link.href, locale)} class="flex items-center gap-2 rounded-md border bg-card p-3 text-sm font-medium transition hover:border-nav/50">
+                <Icon name="lucide:trending-up" class="h-4 w-4 shrink-0 text-nav" />
+                <span class="leading-snug">{link.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+  </div>
+</section>

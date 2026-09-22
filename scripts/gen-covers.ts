@@ -27,11 +27,11 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import subsetFont from 'subset-font';
-import { site } from '~/config/site';
+import { scriptSitePaths } from './lib/active-site-paths';
 import {
   coverFilename,
   hslToHex,
@@ -45,10 +45,12 @@ import {
 } from '~/lib/covers';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const siteModule = await import(pathToFileURL(scriptSitePaths.siteConfig).href);
+const site = siteModule.default ?? siteModule.site;
 const W = 1200;
 const H = 675;
-const CONTENT_DIR = join(root, 'src/content/wiki');
-const COVERS_DIR = join(root, 'src/assets/covers');
+const CONTENT_DIR = scriptSitePaths.content;
+const COVERS_DIR = join(scriptSitePaths.assets, 'covers');
 const FONT_CACHE = join(root, 'node_modules/.cache/gen-covers/fonts');
 const MANIFEST_VERSION = 1;
 
@@ -329,10 +331,10 @@ async function main(): Promise<void> {
     console.error('No src/content/wiki — run from the repo root.');
     process.exit(1);
   }
-  const css = readFileSync(join(root, 'src/styles/globals.css'), 'utf8');
+  const css = readFileSync(scriptSitePaths.themeCss, 'utf8');
   const brand = parseBrandHsl(css);
   if (!brand) {
-    console.error('Could not parse --brand from src/styles/globals.css.');
+    console.error(`Could not parse --brand from ${scriptSitePaths.themeCss}.`);
     process.exit(1);
   }
   const brandHex = hslToHex(brand.h, brand.s, brand.l);

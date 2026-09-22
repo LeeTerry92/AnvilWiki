@@ -1,0 +1,338 @@
+[
+  {
+    "name": "Apartments",
+    "grid": "G6",
+    "left": 41.469,
+    "top": 35.244
+  },
+  {
+    "name": "Brick Warehouses 1",
+    "grid": "H6",
+    "left": 44.017,
+    "top": 34.638999999999996
+  },
+  {
+    "name": "Brick Warehouses 2",
+    "grid": "H6",
+    "left": 44.396,
+    "top": 35.146
+  },
+  {
+    "name": "Brick Warehouses 3",
+    "grid": "H6",
+    "left": 45.373999999999995,
+    "top": 35.832
+  },
+  {
+    "name": "Bridge",
+    "grid": "H6",
+    "left": 43.978,
+    "top": 36.856
+  },
+  {
+    "name": "Bus Depot",
+    "grid": "G6",
+    "left": 43.704,
+    "top": 35.722
+  },
+  {
+    "name": "Factory Large 1",
+    "grid": "G7",
+    "left": 42.907000000000004,
+    "top": 37.681
+  },
+  {
+    "name": "Factory Large 2",
+    "grid": "G7",
+    "left": 43.55,
+    "top": 37.971
+  },
+  {
+    "name": "Farmland 1",
+    "grid": "H6",
+    "left": 45.751999999999995,
+    "top": 36.998999999999995
+  },
+  {
+    "name": "Farmland 2",
+    "grid": "H6",
+    "left": 47.461,
+    "top": 36.644
+  },
+  {
+    "name": "Farmland 3",
+    "grid": "H6",
+    "left": 45.639,
+    "top": 34.63
+  },
+  {
+    "name": "Farmland 4",
+    "grid": "G6",
+    "left": 42.071999999999996,
+    "top": 31.900000000000002
+  },
+  {
+    "name": "Farmland 5",
+    "grid": "H7",
+    "left": 49.591,
+    "top": 39.394
+  },
+  {
+    "name": "Farmland 6",
+    "grid": "H7",
+    "left": 47.647,
+    "top": 40.414
+  },
+  {
+    "name": "Farmland 7",
+    "grid": "H7",
+    "left": 46.105000000000004,
+    "top": 42.498000000000005
+  },
+  {
+    "name": "Forest 1",
+    "grid": "H7",
+    "left": 45.452,
+    "top": 39.378
+  },
+  {
+    "name": "Forest 10",
+    "grid": "H6",
+    "left": 45.113,
+    "top": 32.501999999999995
+  },
+  {
+    "name": "Forest 11",
+    "grid": "G6",
+    "left": 38.472,
+    "top": 35.493
+  },
+  {
+    "name": "Forest 12",
+    "grid": "G6",
+    "left": 39.501999999999995,
+    "top": 32.79
+  },
+  {
+    "name": "Forest 13",
+    "grid": "F7",
+    "left": 37.26,
+    "top": 37.897999999999996
+  },
+  {
+    "name": "Forest 2",
+    "grid": "H7",
+    "left": 44.403,
+    "top": 41.182
+  },
+  {
+    "name": "Forest 3",
+    "grid": "G7",
+    "left": 42.406,
+    "top": 40.89
+  },
+  {
+    "name": "Forest 4",
+    "grid": "G7",
+    "left": 40.916000000000004,
+    "top": 39.828
+  },
+  {
+    "name": "Forest 5",
+    "grid": "G7",
+    "left": 39.149,
+    "top": 38.735
+  },
+  {
+    "name": "Forest 6",
+    "grid": "G6",
+    "left": 40.154,
+    "top": 36.923
+  },
+  {
+    "name": "Forest 7",
+    "grid": "G6",
+    "left": 41.058,
+    "top": 34.941
+  },
+  {
+    "name": "Forest 8",
+    "grid": "G6",
+    "left": 41.792,
+    "top": 33.549
+  },
+  {
+    "name": "Forest 9",
+    "grid": "G6",
+    "left": 43.408,
+    "top": 33.852
+  },
+  {
+    "name": "Import Scrap",
+    "grid": "G6",
+    "left": 41.802,
+    "top": 37.361
+  },
+  {
+    "name": "Offices 1",
+    "grid": "H7",
+    "left": 44.659,
+    "top": 38.23
+  },
+  {
+    "name": "Offices 2",
+    "grid": "H6",
+    "left": 44.586999999999996,
+    "top": 37.083
+  },
+  {
+    "name": "Offices 3",
+    "grid": "H6",
+    "left": 45.054,
+    "top": 35.411
+  },
+  {
+    "name": "Resi 1",
+    "grid": "G6",
+    "left": 40.8,
+    "top": 35.931000000000004
+  },
+  {
+    "name": "Resi 2",
+    "grid": "G6",
+    "left": 41.082,
+    "top": 36.521
+  },
+  {
+    "name": "Resi 3",
+    "grid": "H6",
+    "left": 45.341,
+    "top": 37.253
+  },
+  {
+    "name": "Shipping Exports Large",
+    "grid": "H7",
+    "left": 44.373000000000005,
+    "top": 38.757999999999996
+  },
+  {
+    "name": "Shipping Exports Long",
+    "grid": "G7",
+    "left": 43.094,
+    "top": 38.3
+  },
+  {
+    "name": "Shops 1",
+    "grid": "H6",
+    "left": 44.746,
+    "top": 36.632
+  },
+  {
+    "name": "Shops 2",
+    "grid": "G6",
+    "left": 42.22,
+    "top": 34.521
+  },
+  {
+    "name": "Tower 1",
+    "grid": "G6",
+    "left": 41.855,
+    "top": 36.353
+  },
+  {
+    "name": "Tower 2",
+    "grid": "H6",
+    "left": 44.411,
+    "top": 35.937999999999995
+  },
+  {
+    "name": "Tower 3",
+    "grid": "G7",
+    "left": 42.757,
+    "top": 38.865
+  },
+  {
+    "name": "Train Shed 1",
+    "grid": "G7",
+    "left": 43.355,
+    "top": 39.089
+  },
+  {
+    "name": "Train Shed 2",
+    "grid": "G7",
+    "left": 41.603,
+    "top": 37.812
+  },
+  {
+    "name": "Train Tracks",
+    "grid": "G7",
+    "left": 43.506,
+    "top": 38.797
+  },
+  {
+    "name": "Warehouse 8",
+    "grid": "G6",
+    "left": 42.744,
+    "top": 34.738
+  },
+  {
+    "name": "Warehouse Small",
+    "grid": "G6",
+    "left": 39.574,
+    "top": 34.792
+  },
+  {
+    "name": "Warehouses 1",
+    "grid": "G6",
+    "left": 43.265,
+    "top": 36.836
+  },
+  {
+    "name": "Warehouses 2",
+    "grid": "G6",
+    "left": 42.400999999999996,
+    "top": 36.703
+  },
+  {
+    "name": "Warehouses 3",
+    "grid": "G6",
+    "left": 42.666,
+    "top": 35.725
+  },
+  {
+    "name": "Warehouses 4",
+    "grid": "H6",
+    "left": 43.932,
+    "top": 37.458000000000006
+  },
+  {
+    "name": "Warehouses 5",
+    "grid": "G7",
+    "left": 41.423,
+    "top": 38.695
+  },
+  {
+    "name": "Warehouses 6",
+    "grid": "G7",
+    "left": 41.987,
+    "top": 38.482
+  },
+  {
+    "name": "Warehouses 7",
+    "grid": "G7",
+    "left": 40.437,
+    "top": 37.729
+  },
+  {
+    "name": "Water Tower 1",
+    "grid": "G7",
+    "left": 42.575,
+    "top": 39.567
+  },
+  {
+    "name": "Water Tower 2",
+    "grid": "G7",
+    "left": 43.297999999999995,
+    "top": 39.918
+  }
+]

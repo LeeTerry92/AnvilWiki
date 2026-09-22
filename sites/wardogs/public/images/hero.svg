@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#101713"/>
+  <path d="M0 470 330 250l170 84 220-184 480 276v204H0Z" fill="#1d3327"/>
+  <path d="m0 540 360-190 176 94 224-172 440 224v134H0Z" fill="#287a4d" opacity=".72"/>
+  <path d="M150 120h112v12H150zm0 28h72v8h-72zM938 474h112v12H938zm40 28h72v8h-72z" fill="#9fd3af" opacity=".7"/>
+  <text x="110" y="288" font-family="system-ui, sans-serif" font-size="34" font-weight="600" fill="#9fd3af" letter-spacing="6">FIELD MANUAL</text>
+  <text x="104" y="378" font-family="system-ui, sans-serif" font-size="86" font-weight="800" fill="#f4f7f4">WAR DOGS WIKI</text>
+  <text x="110" y="438" font-family="system-ui, sans-serif" font-size="28" fill="#d6e4da">Plan the mission. Own the field.</text>
+</svg>

@@ -5,9 +5,8 @@
  *   pnpm gen-assets            # regenerate assets whose inputs changed
  *   pnpm gen-assets --force    # ignore the cache manifest
  *
- * What it writes (IN PLACE, same filenames the template already references —
- * zero code changes needed; the fork lesson this closes: shipping the demo
- * anvil favicon to production because binary assets were "manual, later"):
+ * 多站模式写入 sites/<id>/public/；未设置 SITE_ID 时沿用根 public/。
+ * 文件名与页面引用保持一致：
  *   public/favicon.svg                    brand square + game initial (SVG <text>)
  *   public/favicon-16x16.png              ┐
  *   public/favicon-32x32.png              │ satori-rendered 512 square,
@@ -30,16 +29,20 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
 import subsetFont from 'subset-font';
-import { site } from '~/config/site';
+import { activeSiteId, isPlatformBuild } from '~/platform/site-context';
+import { scriptSitePaths } from './lib/active-site-paths';
 import { hslToHex, hasCjk, parseBrandHsl, stableHash, stripEmoji, subsetText } from '~/lib/covers';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PUBLIC = join(root, 'public');
+const PUBLIC = scriptSitePaths.public;
+const PUBLIC_LABEL = isPlatformBuild ? `sites/${activeSiteId}/public` : 'public';
+const siteModule = await import(pathToFileURL(scriptSitePaths.siteConfig).href);
+const site = siteModule.default ?? siteModule.site;
 const FONT_CACHE = join(root, 'node_modules/.cache/gen-covers/fonts');
 const MANIFEST_VERSION = 1;
 const FORCE = process.argv.includes('--force');
@@ -105,10 +108,10 @@ async function renderPng(element: unknown, width: number, height: number, fonts:
 }
 
 async function main() {
-  const css = readFileSync(join(root, 'src/styles/globals.css'), 'utf8');
+  const css = readFileSync(scriptSitePaths.themeCss, 'utf8');
   const brand = parseBrandHsl(css);
   if (!brand) {
-    console.error('❌ could not parse --brand from src/styles/globals.css');
+    console.error(`❌ could not parse --brand from ${scriptSitePaths.themeCss}`);
     process.exit(1);
   }
   const brandHex = hslToHex(brand.h, brand.s, brand.l);
@@ -119,7 +122,12 @@ async function main() {
   const gameName = stripEmoji(site.game.name).trim() || site.name;
   const heroTitle = stripEmoji(site.name).trim();
 
-  const manifestPath = join(root, 'node_modules/.cache/gen-assets/manifest.json');
+  const manifestPath = join(
+    root,
+    'node_modules/.cache/gen-assets',
+    ...(isPlatformBuild ? [activeSiteId] : []),
+    'manifest.json',
+  );
   mkdirSync(dirname(manifestPath), { recursive: true });
   const manifest: Record<string, string> = existsSync(manifestPath)
     ? JSON.parse(readFileSync(manifestPath, 'utf8'))
@@ -128,7 +136,7 @@ async function main() {
     stableHash(`${MANIFEST_VERSION}|${name}|${inputs.join('|')}`);
   const fresh = (name: string, hash: string) => FORCE || manifest[name] !== hash;
 
-  console.log(`\n🎨 gen-assets — brand ${brandHex}, initial "${initial}"\n`);
+  console.log(`\n🎨 gen-assets — ${PUBLIC_LABEL}, brand ${brandHex}, initial "${initial}"\n`);
 
   // 1. favicon.svg — handwritten SVG (browser renders the <text> with its own
   //    system fonts; no font embedding needed at this size).
@@ -139,7 +147,7 @@ async function main() {
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${brandHex}"/><text x="32" y="43" font-family="system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" font-size="34" font-weight="700" fill="${ink}" text-anchor="middle">${initial}</text></svg>\n`,
     );
     manifest['favicon.svg'] = svgHash;
-    console.log('  ✅ public/favicon.svg');
+    console.log(`  ✅ ${PUBLIC_LABEL}/favicon.svg`);
   }
 
   // 2. PNG favicons — one 512px satori render, sharp-resized per size.
@@ -180,7 +188,7 @@ async function main() {
       const buf =
         size === 512 ? png512 : await sharp(png512).resize(size, size, { fit: 'contain' }).png().toBuffer();
       writeFileSync(join(PUBLIC, name), buf);
-      console.log(`  ✅ public/${name} (${size}×${size})`);
+      console.log(`  ✅ ${PUBLIC_LABEL}/${name} (${size}×${size})`);
     }
     manifest['favicon-png'] = pngHash;
   }
@@ -239,7 +247,7 @@ async function main() {
     mkdirSync(join(PUBLIC, 'images'), { recursive: true });
     writeFileSync(join(PUBLIC, 'images/hero.webp'), await sharp(png).webp({ quality: 90 }).toBuffer());
     manifest['hero.webp'] = heroHash;
-    console.log('  ✅ public/images/hero.webp (1200×630)');
+    console.log(`  ✅ ${PUBLIC_LABEL}/images/hero.webp (1200×630)`);
   }
 
   // 4. manifest.json theme_color — keep the PWA color glued to the live brand.
@@ -248,7 +256,7 @@ async function main() {
   if ((manifestJson.theme_color ?? '').toLowerCase() !== brandHex.toLowerCase()) {
     manifestJson.theme_color = brandHex;
     writeFileSync(manifestJsonPath, JSON.stringify(manifestJson, null, 2) + '\n');
-    console.log(`  ✅ public/manifest.json theme_color → ${brandHex}`);
+    console.log(`  ✅ ${PUBLIC_LABEL}/manifest.json theme_color → ${brandHex}`);
   }
 
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');

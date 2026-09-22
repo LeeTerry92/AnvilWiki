@@ -37,9 +37,11 @@ import * as path from 'node:path';
 import { containsControlChar, isBlankOrComment, parseDelimited } from './lib/delimited';
 import { readLocales } from './lib/routing-flags';
 import { todayIso } from './lib/today';
+import { displayPath, scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
-const CONTENT_BASE = path.resolve(ROOT, 'src/content/wiki');
+const CONTENT_BASE = scriptSitePaths.content;
+const CONTENT_LABEL = displayPath(CONTENT_BASE);
 const ARGS = process.argv.slice(2);
 const DRY_RUN = ARGS.includes('--dry-run') || ARGS.includes('-n');
 // Used by auto-content.yml: scaffolding 0 articles (empty list, or every
@@ -63,7 +65,7 @@ interface Row {
 // A silent fallback list would validate rows against the WRONG vocabulary if
 // the source format drifts — parse failures must be loud, not papered over.
 function readCategories(): string[] {
-  const src = fs.readFileSync(path.resolve(ROOT, 'src/config/navigation.ts'), 'utf8');
+  const src = fs.readFileSync(scriptSitePaths.navigation, 'utf8');
   const keys = Array.from(src.matchAll(/key:\s*['"]([^'"]+)['"]/g)).map((m) => m[1]);
   if (keys.length === 0) {
     console.error('❌ Could not parse category keys from src/config/navigation.ts (expected `key: \'…\'` entries).');
@@ -247,7 +249,7 @@ for (let r = headerIdx + 1; r < table.length; r++) {
   }
   if (hasControlError) continue;
 
-  const relPath = path.join('src/content/wiki', locale, category, `${slug}.mdx`);
+  const relPath = path.join(CONTENT_LABEL, locale, category, `${slug}.mdx`);
   const dupLine = seenTargets.get(relPath);
   if (dupLine) {
     errors.push(`line ${line}: "${relPath}" also produced by line ${dupLine} (duplicate slug)`);
@@ -316,10 +318,10 @@ headings followed by a concise direct answer.
 if (DRY_RUN) {
   console.log('\n🔍 Dry run — nothing written. Plan:\n');
   for (const row of created) {
-    console.log(`  ＋ src/content/wiki/${row.locale}/${row.category}/${row.slug}.mdx  ← "${row.title}"`);
+    console.log(`  ＋ ${CONTENT_LABEL}/${row.locale}/${row.category}/${row.slug}.mdx  ← "${row.title}"`);
   }
   for (const { row, reason } of skipped) {
-    console.log(`  − src/content/wiki/${row.locale}/${row.category}/${row.slug}.mdx  (${reason})`);
+    console.log(`  − ${CONTENT_LABEL}/${row.locale}/${row.category}/${row.slug}.mdx  (${reason})`);
   }
   console.log(`\nPlan: create ${created.length}, skip ${skipped.length}. Re-run without --dry-run to write.`);
   process.exit(0);
@@ -334,7 +336,7 @@ for (const row of created) {
   console.log(`  ✅ Created: ${path.relative(ROOT, filePath)}  (${urlPath})`);
 }
 for (const { row, reason } of skipped) {
-  console.log(`  ⏭️  Skipped: src/content/wiki/${row.locale}/${row.category}/${row.slug}.mdx — ${reason}`);
+  console.log(`  ⏭️  Skipped: ${CONTENT_LABEL}/${row.locale}/${row.category}/${row.slug}.mdx — ${reason}`);
 }
 
 console.log(

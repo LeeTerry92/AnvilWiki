@@ -1,7 +1,8 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { CONTENT_TYPES } from './config/navigation';
+import { CONTENT_TYPES } from '~/config/navigation';
+import { activeSitePaths } from '~/platform/site-context';
 
 /**
  * Wiki content collection.
@@ -22,7 +23,7 @@ import { CONTENT_TYPES } from './config/navigation';
  * absolute og:image URL, read `.src` and prefix with `siteUrl`.
  */
 const wiki = defineCollection({
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/wiki' }),
+  loader: glob({ pattern: '**/*.mdx', base: activeSitePaths.content }),
   schema: ({ image }) =>
     z.object({
       title: z.string().max(80),

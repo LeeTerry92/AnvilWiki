@@ -1,0 +1,86 @@
+---
+import bakurani from '../data/bakurani-locations.json';
+import ozeti from '../data/ozeti-locations.json';
+import zestafona from '../data/zestafona-locations.json';
+
+interface Props { name: 'bakurani' | 'ozeti' | 'zestafona' }
+const { name } = Astro.props;
+const locations = { bakurani, ozeti, zestafona }[name];
+const title = name[0].toUpperCase() + name.slice(1);
+---
+
+<section class="wd-atlas" data-map-atlas aria-label={`${title} terrain atlas`}>
+  <div class="wd-atlas-heading"><div><p>ALPHA / BETA TERRAIN REFERENCE</p><h2>{title} terrain atlas</h2></div><span>{locations.length} recorded locations</span></div>
+  <nav aria-label="Choose a battlefield"><a href="/wardogs-map/">All maps</a>{(['bakurani','ozeti','zestafona'] as const).map((map) => <a href={`/wardogs-${map}-map/`} aria-current={map === name ? 'page' : undefined}>{map[0].toUpperCase() + map.slice(1)}</a>)}</nav>
+  <p class="wd-caution">Working names from test-build terrain. Current server rotation and in-game names have not been independently verified.</p>
+  <div class="wd-controls">
+    <label>Find a location or grid <input data-map-search type="search" placeholder="Bridge, H12..." /></label>
+    <div><button type="button" data-zoom-out aria-label="Zoom out">−</button><output data-zoom-output>1.0×</output><button type="button" data-zoom-in aria-label="Zoom in">+</button><button type="button" data-zoom-reset>Reset</button></div>
+  </div>
+  <div class="wd-map-wrap">
+    <div class="wd-map-viewport" tabindex="0" aria-label={`${title} overhead terrain map`}>
+      <div class="wd-map-canvas" data-map-canvas>
+        <img src={`/media/maps/${name}.webp`} alt={`${title} overhead terrain, historical test-build reference`} loading="lazy" />
+        {locations.map((location, index) => <button type="button" class="wd-marker" data-map-marker data-index={index} data-name={location.name.toLowerCase()} data-grid={location.grid.toLowerCase()} style={`left:${location.left}%;top:${location.top}%`} aria-label={`${location.name}, grid ${location.grid}`} title={`${location.name} · ${location.grid}`}></button>)}
+      </div>
+    </div>
+    <div class="wd-location-panel"><p data-map-count role="status">{locations.length} locations</p><div class="wd-location-list">{locations.map((location, index) => <button type="button" data-map-location data-index={index} data-name={location.name.toLowerCase()} data-grid={location.grid.toLowerCase()}><span>{location.name}</span><small>{location.grid}</small></button>)}</div></div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-map-atlas]').forEach((atlas) => {
+    const search = atlas.querySelector<HTMLInputElement>('[data-map-search]');
+    const canvas = atlas.querySelector<HTMLElement>('[data-map-canvas]');
+    const output = atlas.querySelector<HTMLOutputElement>('[data-zoom-output]');
+    const count = atlas.querySelector<HTMLElement>('[data-map-count]');
+    const locations = [...atlas.querySelectorAll<HTMLElement>('[data-map-location]')];
+    const markers = [...atlas.querySelectorAll<HTMLElement>('[data-map-marker]')];
+    let zoom = 1;
+    const setZoom = (next: number) => {
+      zoom = Math.max(1, Math.min(2.5, next));
+      if (canvas) canvas.style.transform = `scale(${zoom})`;
+      if (output) output.textContent = `${zoom.toFixed(1)}×`;
+    };
+    const select = (index: string | undefined) => {
+      locations.forEach((item) => item.classList.toggle('selected', item.dataset.index === index));
+      markers.forEach((item) => item.classList.toggle('selected', item.dataset.index === index));
+    };
+    const filter = () => {
+      const query = search?.value.trim().toLowerCase() ?? '';
+      let shown = 0;
+      locations.forEach((item, index) => {
+        const visible = !query || `${item.dataset.name} ${item.dataset.grid}`.includes(query);
+        item.hidden = !visible;
+        markers[index].hidden = !visible;
+        if (visible) shown++;
+      });
+      if (count) count.textContent = `${shown} locations`;
+      select(undefined);
+    };
+    search?.addEventListener('input', filter);
+    atlas.querySelector('[data-zoom-out]')?.addEventListener('click', () => setZoom(zoom - .25));
+    atlas.querySelector('[data-zoom-in]')?.addEventListener('click', () => setZoom(zoom + .25));
+    atlas.querySelector('[data-zoom-reset]')?.addEventListener('click', () => setZoom(1));
+    locations.forEach((item) => item.addEventListener('click', () => select(item.dataset.index)));
+    markers.forEach((item) => item.addEventListener('click', () => select(item.dataset.index)));
+  });
+</script>
+
+<style>
+  .wd-atlas{margin:2rem 0;border:1px solid #405047;background:#14201f;color:#eef3ee;font-family:var(--site-font-body)}
+  .wd-atlas-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;padding:1.4rem 1.5rem}
+  .wd-atlas-heading p{margin:0 0 .3rem;color:#e4a451;font-size:.69rem;font-weight:800;letter-spacing:.1em}
+  .wd-atlas h2{margin:0;color:#fff;font-size:1.4rem}.wd-atlas-heading span{font-size:.78rem;color:#b6c9bb;white-space:nowrap}
+  .wd-atlas nav{display:flex;flex-wrap:wrap;gap:.2rem;border-top:1px solid #405047;border-bottom:1px solid #405047;padding:.5rem 1rem}
+  .wd-atlas nav a{color:#d8e3da;text-decoration:none;font-size:.78rem;padding:.4rem .55rem}.wd-atlas nav a[aria-current]{color:#e4a451;border-bottom:2px solid #e4a451}
+  .wd-caution{font-size:.75rem;color:#d6be93;padding:.7rem 1.5rem;margin:0;background:#332b1c}
+  .wd-controls{display:flex;justify-content:space-between;align-items:end;gap:1rem;padding:1rem 1.5rem}
+  .wd-controls label{display:grid;gap:.25rem;flex:1;color:#bac8bc;font-size:.72rem;font-weight:700}.wd-controls input{min-width:0;width:100%;border:1px solid #58675d;background:#0b1614;color:#fff;padding:.6rem;border-radius:2px}
+  .wd-controls>div{display:flex;align-items:center;gap:.3rem}.wd-controls button{height:2.4rem;min-width:2.4rem;border:1px solid #58675d;background:#26362f;color:#fff;cursor:pointer}.wd-controls output{font-size:.77rem;min-width:2.5rem;text-align:center}
+  .wd-map-wrap{display:grid;grid-template-columns:minmax(0,1fr) 13rem;border-top:1px solid #405047}
+  .wd-map-viewport{overflow:auto;aspect-ratio:1;max-height:36rem;background:#0b1513}.wd-map-canvas{position:relative;width:100%;transform-origin:center;transition:transform .15s}.wd-map-canvas img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}
+  .wd-marker{position:absolute;width:.48rem;height:.48rem;border:1px solid #fff;border-radius:50%;background:#e4a451;padding:0;transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 0 0 2px #17231f}.wd-marker.selected{background:#fffb9a;z-index:2;box-shadow:0 0 0 5px #e4a45177}.wd-marker[hidden]{display:none}
+  .wd-location-panel{border-left:1px solid #405047;min-height:0;display:flex;flex-direction:column}.wd-location-panel>p{font-size:.72rem;color:#e4a451;font-weight:800;margin:0;padding:.8rem;border-bottom:1px solid #405047}.wd-location-list{overflow:auto;max-height:34rem}.wd-location-list button{width:100%;display:flex;justify-content:space-between;gap:.5rem;text-align:left;padding:.6rem .8rem;border:0;border-bottom:1px solid #314039;background:transparent;color:#e9f0e9;font-size:.75rem;cursor:pointer}.wd-location-list button:hover,.wd-location-list button.selected{background:#344333}.wd-location-list button[hidden]{display:none}.wd-location-list small{color:#e4a451;white-space:nowrap}
+  @media(max-width:680px){.wd-atlas-heading{display:block}.wd-atlas-heading span{display:block;margin-top:.5rem}.wd-controls{display:block}.wd-controls>div{margin-top:.7rem}.wd-map-wrap{grid-template-columns:1fr}.wd-location-panel{border-left:0;border-top:1px solid #405047}.wd-location-list{max-height:12rem}}
+</style>

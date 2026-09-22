@@ -15,8 +15,9 @@ import { todayIso } from './lib/today';
 import * as path from 'node:path';
 import { createLinePrompt } from './lib/prompt';
 import { readLocales } from './lib/routing-flags';
+import { scriptSitePaths } from './lib/active-site-paths';
 
-const CONTENT_BASE = path.resolve(process.cwd(), 'src/content/wiki');
+const CONTENT_BASE = scriptSitePaths.content;
 
 // Read navigation categories from config so the prompt stays in sync.
 // We avoid importing the .ts directly (would need tsx loader chaining) and
@@ -24,7 +25,7 @@ const CONTENT_BASE = path.resolve(process.cwd(), 'src/content/wiki');
 // loud: a silent fallback list would prompt against the wrong vocabulary.
 // (Locales come from the shared scripts/lib/routing-flags.ts.)
 function readCategories(): string[] {
-  const src = fs.readFileSync(path.resolve(process.cwd(), 'src/config/navigation.ts'), 'utf8');
+  const src = fs.readFileSync(scriptSitePaths.navigation, 'utf8');
   const keys = Array.from(src.matchAll(/key:\s*['"]([^'"]+)['"]/g)).map((m) => m[1]);
   if (keys.length === 0) {
     console.error('❌ Could not parse category keys from src/config/navigation.ts.');

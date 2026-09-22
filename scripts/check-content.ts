@@ -31,9 +31,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readDefaultLocale } from './lib/routing-flags';
 import { walkFiles } from './lib/walk';
+import { scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
-const BASE = path.resolve(ROOT, 'src/content/wiki');
+const BASE = scriptSitePaths.content;
 
 // Parsed from routing.ts (NOT hardcoded) so forks that change the default
 // locale keep this rule honest.

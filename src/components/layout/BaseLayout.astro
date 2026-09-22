@@ -11,6 +11,7 @@
  * Pages should wrap themselves in LocaleLayout (which wraps this), not call this directly.
  */
 import '~/styles/globals.css';
+import { isPlatformBuild } from '~/platform/site-context';
 import { site, siteUrl } from '~/config/site';
 import { defaultLocale, locales, OG_LOCALE_MAP, type Locale } from '~/i18n/routing';
 import { organizationJsonLd } from '~/lib/seo';
@@ -152,10 +153,11 @@ const privacyLabel = consent?.privacyLabel ?? footerStrings.privacyPolicy ?? 'Pr
 ---
 
 <!doctype html>
-<html lang={mainLocale} class="scroll-smooth">
+<html lang={mainLocale} class="scroll-smooth" data-site-theme={site.theme ?? 'default'}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {isPlatformBuild && <link rel="stylesheet" href="/theme.css" />}
     {/* pnpm gen-assets regenerates these in place with the live brand color.
         SVG first (sharp modern browsers), 32px PNG fallback; the legacy
         favicon.ico stays in public/ but is never referenced (sharp can't

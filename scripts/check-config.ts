@@ -33,6 +33,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readLocales } from './lib/routing-flags';
+import { displayPath, scriptSitePaths } from './lib/active-site-paths';
 
 const ROOT = process.cwd();
 const read = (p: string) => fs.readFileSync(path.resolve(ROOT, p), 'utf8');
@@ -48,7 +49,7 @@ const err = (msg: string) => {
 // ---------------------------------------------------------------------------
 // 1. Parse navigation.ts keys
 // ---------------------------------------------------------------------------
-const navSrc = read('src/config/navigation.ts');
+const navSrc = fs.readFileSync(scriptSitePaths.navigation, 'utf8');
 // Both quote styles (template-audit.ts parses this same file the same way):
 // a fork reformatting navigation.ts to double quotes must not silently
 // disable every nav-dimension check below.
@@ -71,7 +72,7 @@ const routingLocales = readLocales(ROOT);
 // ---------------------------------------------------------------------------
 let enJson: Record<string, any>;
 try {
-  enJson = JSON.parse(read('src/locales/en.json'));
+  enJson = JSON.parse(fs.readFileSync(path.join(scriptSitePaths.locales, 'en.json'), 'utf8'));
 } catch (e) {
   err(`src/locales/en.json is not valid JSON: ${(e as Error).message}`);
   process.exit(1);
@@ -89,7 +90,7 @@ for (const key of navKeys) {
   if (!enJson.overview || !(key in (enJson.overview ?? {}))) {
     err(`en.json is missing overview.${key} (list page will have no title)`);
   }
-  const contentDir = path.resolve(ROOT, 'src/content/wiki/en', key);
+  const contentDir = path.resolve(scriptSitePaths.content, 'en', key);
   if (!fs.existsSync(contentDir)) {
     // Not an error: an empty category simply renders the "no articles" state
     // on its list page. Surface as info so users know it's intentional-looking.
@@ -102,18 +103,18 @@ if (errors === 0) console.log('  ✅ all nav keys consistent');
 console.log('\n2. Locale consistency (routing.ts ↔ locales/*.json ↔ content dirs)');
 let localeErrors = 0;
 for (const loc of routingLocales) {
-  const jsonPath = path.resolve(ROOT, 'src/locales', `${loc}.json`);
+  const jsonPath = path.resolve(scriptSitePaths.locales, `${loc}.json`);
   if (!fs.existsSync(jsonPath)) {
     err(`src/locales/${loc}.json missing (declared in routing.ts)`);
     localeErrors++;
   }
-  const contentDir = path.resolve(ROOT, 'src/content/wiki', loc);
+  const contentDir = path.resolve(scriptSitePaths.content, loc);
   if (!fs.existsSync(contentDir)) {
     err(`content directory src/content/wiki/${loc}/ missing (declared in routing.ts)`);
     localeErrors++;
   }
 }
-const localesDir = path.resolve(ROOT, 'src/locales');
+const localesDir = scriptSitePaths.locales;
 if (fs.existsSync(localesDir)) {
   for (const f of fs.readdirSync(localesDir)) {
     if (!f.endsWith('.json')) continue;
@@ -136,7 +137,7 @@ if (localeErrors === 0) console.log('  ✅ all locales consistent');
 console.log('\n3. Homepage displayType enum (all locale JSONs)');
 let displayErrors = 0;
 for (const loc of routingLocales) {
-  const jsonPath = path.resolve(ROOT, 'src/locales', `${loc}.json`);
+  const jsonPath = path.resolve(scriptSitePaths.locales, `${loc}.json`);
   if (!fs.existsSync(jsonPath)) continue;
   let json: Record<string, any>;
   try {
@@ -159,16 +160,18 @@ if (displayErrors === 0) console.log('  ✅ all displayTypes valid');
 
 // --- Check 5: deployment domain gate (wrangler.toml ↔ site.ts) -------------
 console.log('\n4. Deployment domain (wrangler.toml SITE_URL ↔ site.ts domain)');
-const siteSrc = read('src/config/site.ts');
+const siteSrc = fs.readFileSync(scriptSitePaths.siteConfig, 'utf8');
 const domain = siteSrc.match(/^\s*domain:\s*'([^']+)'/m)?.[1];
 let effectiveUrl = process.env.SITE_URL ?? '';
 let urlSource = 'env SITE_URL';
-if (!effectiveUrl && fs.existsSync(path.resolve(ROOT, 'wrangler.toml'))) {
+if (!effectiveUrl && !process.env.SITE_ID && fs.existsSync(path.resolve(ROOT, 'wrangler.toml'))) {
   effectiveUrl = read('wrangler.toml').match(/^SITE_URL\s*=\s*"([^"]+)"/m)?.[1] ?? '';
   urlSource = 'wrangler.toml [vars]';
 }
 if (!domain) {
-  err('could not parse `domain` in src/config/site.ts');
+  err(`could not parse \`domain\` in ${displayPath(scriptSitePaths.siteConfig)}`);
+} else if (!effectiveUrl && process.env.SITE_ID) {
+  console.log(`  ℹ️  SITE_ID=${process.env.SITE_ID}: no SITE_URL override; using site.ts domain https://${domain}`);
 } else if (!effectiveUrl) {
   err(`no SITE_URL found (env or wrangler.toml) — canonical/sitemap would fall back to https://${domain}`);
 } else {

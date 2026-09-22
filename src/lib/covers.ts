@@ -13,9 +13,8 @@ export interface BrandHsl {
 }
 
 /**
- * Parse the light-mode `--brand: H S% L%;` declaration out of globals.css.
- * The brand color is the single source of truth for theming — covers must
- * read it from there instead of hardcoding hex values.
+ * 从当前模式的主题 CSS 中读取亮色品牌色。旧单站模式使用 globals.css，
+ * 多站模式使用 sites/<id>/theme.css。
  */
 export function parseBrandHsl(css: string): BrandHsl | null {
   const m = css.match(/--brand:\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);

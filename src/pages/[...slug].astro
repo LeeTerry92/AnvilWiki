@@ -11,6 +11,7 @@
 import ListPage from '~/components/article/ListPage.astro';
 import ArticlePage from '~/components/article/ArticlePage.astro';
 import { CONTENT_TYPES } from '~/config/navigation';
+import { site } from '~/config/site';
 import { defaultLocale, type Locale } from '~/i18n/routing';
 import { getEntryWithFallback, localesForEntry, localesForCategory, parseEntryId, type ResolvedEntry } from '~/lib/content';
 import { detailPath, languageAlternates, listPath } from '~/lib/url';
@@ -32,7 +33,7 @@ export async function getStaticPaths() {
     if (entry.data.draft && !isDev) continue;
     const parsed = parseEntryId(entry.id);
     if (!parsed || parsed.locale !== defaultLocale) continue;
-    paths.push({ params: { slug: `${parsed.category}/${parsed.slug}` } });
+    paths.push({ params: { slug: site.articlePathMode === 'flat' ? parsed.slug : `${parsed.category}/${parsed.slug}` } });
   }
 
   return paths;
@@ -55,6 +56,19 @@ let resolved: ResolvedEntry | null = null;
 if (parts.length === 1) {
   category = parts[0];
   view = CONTENT_TYPES.includes(category) ? 'list' : 'not-found';
+  if (view === 'not-found' && site.articlePathMode === 'flat') {
+    const { getCollection } = await import('astro:content');
+    const match = (await getCollection('wiki')).find((entry) => {
+      const parsed = parseEntryId(entry.id);
+      return parsed?.locale === locale && parsed.slug === slug;
+    });
+    if (match) {
+      category = match.data.category;
+      articleSlug = slug!;
+      resolved = await getEntryWithFallback(category, articleSlug, locale);
+      view = resolved ? 'article' : 'not-found';
+    }
+  }
 } else {
   category = parts[0];
   articleSlug = parts.slice(1).join('/');

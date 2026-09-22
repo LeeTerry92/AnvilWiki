@@ -6,6 +6,7 @@
  */
 
 import { NAVIGATION_CONFIG } from '~/config/navigation';
+import { site } from '~/config/site';
 import { getEntriesByCategory, parseEntryId } from '~/i18n/content';
 import type { Locale } from '~/i18n/routing';
 import type { WikiEntry } from '~/i18n/content';
@@ -45,7 +46,7 @@ export async function getDynamicNavigation(
         return {
           title: e.data.title,
           slug,
-          path: `${item.path}/${slug}`,
+          path: site.articlePathMode === 'flat' ? `/${slug}` : `${item.path}/${slug}`,
         };
       }),
     });

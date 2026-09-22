@@ -1,0 +1,17 @@
+---
+import FaqSection from '~/components/home/FaqSection.astro';
+import type { Locale } from '~/i18n/routing';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  block: HomeBlock;
+  locale: Locale;
+}
+
+const { block } = Astro.props;
+if (block.type !== 'faq') throw new Error(`FaqBlock cannot render ${block.type}`);
+---
+
+<div class="border-t border-border">
+  <FaqSection title={block.title} description={block.description} items={block.items} />
+</div>

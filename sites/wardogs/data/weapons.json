@@ -1,0 +1,381 @@
+[
+  {
+    "name": "BUSHMASTER M17S",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "$0",
+    "stats": {
+      "Recorded fire rate": "700 RPM",
+      "Recorded weight": "3.17 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/bushmaster-m17s/"
+  },
+  {
+    "name": "A-91",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "Not verified",
+    "stats": {
+      "Recorded fire rate": "700 RPM",
+      "Recorded weight": "3.17 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/a-91/"
+  },
+  {
+    "name": "KH-2002",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "Not verified",
+    "stats": {
+      "Recorded fire rate": "700 RPM",
+      "Recorded weight": "3.17 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/kh-2002/"
+  },
+  {
+    "name": "T-21",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "$600",
+    "stats": {
+      "Recorded fire rate": "750 RPM",
+      "Recorded weight": "3.27 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/t-21/"
+  },
+  {
+    "name": "AK74",
+    "category": "Assault rifles",
+    "calibre": "5.45×39 mm",
+    "price": "$1,600",
+    "stats": {
+      "Recorded fire rate": "650 RPM",
+      "Recorded weight": "3 kg",
+      "Listed effective range": "500 m",
+      "Muzzle velocity": "880 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/ak74/"
+  },
+  {
+    "name": "GALIL",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "$2,200",
+    "stats": {
+      "Recorded fire rate": "650 RPM",
+      "Recorded weight": "3.95 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/galil/"
+  },
+  {
+    "name": "M4",
+    "category": "Assault rifles",
+    "calibre": "5.56×45 mm",
+    "price": "$2,800",
+    "stats": {
+      "Recorded fire rate": "800 RPM",
+      "Recorded weight": "2.92 kg",
+      "Listed effective range": "500 m",
+      "Muzzle velocity": "910 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/m4/"
+  },
+  {
+    "name": "FAL",
+    "category": "Assault rifles",
+    "calibre": ".308 Win",
+    "price": "$6,500",
+    "stats": {
+      "Recorded fire rate": "650 RPM",
+      "Recorded weight": "4.25 kg",
+      "Listed effective range": "800 m",
+      "Muzzle velocity": "840 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/fal/"
+  },
+  {
+    "name": "AMP-9",
+    "category": "Submachine guns",
+    "calibre": "9×19 mm",
+    "price": "$900",
+    "stats": {
+      "Recorded fire rate": "900 RPM",
+      "Recorded weight": "1.4 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/amp-9/"
+  },
+  {
+    "name": "PP-19 VITYAZ",
+    "category": "Submachine guns",
+    "calibre": "9×19 mm",
+    "price": "$1,200",
+    "stats": {
+      "Recorded fire rate": "800 RPM",
+      "Recorded weight": "2.9 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/pp-19-vityaz/"
+  },
+  {
+    "name": "MP5",
+    "category": "Submachine guns",
+    "calibre": "9×19 mm",
+    "price": "$1,500",
+    "stats": {
+      "Recorded fire rate": "800 RPM",
+      "Recorded weight": "2.54 kg",
+      "Listed effective range": "200 m",
+      "Muzzle velocity": "400 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/mp5/"
+  },
+  {
+    "name": "SUPER-45",
+    "category": "Submachine guns",
+    "calibre": ".45 ACP",
+    "price": "$2,600",
+    "stats": {
+      "Recorded fire rate": "1200 RPM",
+      "Recorded weight": "3 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/super-45/"
+  },
+  {
+    "name": "MP43",
+    "category": "Shotguns",
+    "calibre": "12 Gauge",
+    "price": "$400",
+    "stats": {
+      "Recorded fire rate": "Not verified",
+      "Recorded weight": "3.2 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/mp43/"
+  },
+  {
+    "name": "M500",
+    "category": "Shotguns",
+    "calibre": "12 Gauge",
+    "price": "$1,200",
+    "stats": {
+      "Recorded fire rate": "120 RPM",
+      "Recorded weight": "3.52 kg",
+      "Listed effective range": "70 m",
+      "Muzzle velocity": "480 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/m500/"
+  },
+  {
+    "name": "M249 SAW",
+    "category": "Light machine guns",
+    "calibre": "5.56×45 mm",
+    "price": "$3,200",
+    "stats": {
+      "Recorded fire rate": "850 RPM",
+      "Recorded weight": "7.5 kg",
+      "Listed effective range": "700 m",
+      "Muzzle velocity": "915 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/m249-saw/"
+  },
+  {
+    "name": "PKM",
+    "category": "Light machine guns",
+    "calibre": "7.62×54 mm",
+    "price": "$4,500",
+    "stats": {
+      "Recorded fire rate": "600 RPM",
+      "Recorded weight": "7.5 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/pkm/"
+  },
+  {
+    "name": "SKS",
+    "category": "Marksman rifles",
+    "calibre": "7.62×39 mm",
+    "price": "$2,400",
+    "stats": {
+      "Recorded fire rate": "420 RPM",
+      "Recorded weight": "3.85 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/sks/"
+  },
+  {
+    "name": "SVD",
+    "category": "Marksman rifles",
+    "calibre": "7.62×54 mm",
+    "price": "$4,800",
+    "stats": {
+      "Recorded fire rate": "480 RPM",
+      "Recorded weight": "5.3 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/svd/"
+  },
+  {
+    "name": "BMR-308",
+    "category": "Marksman rifles",
+    "calibre": ".308 Win",
+    "price": "$6,000",
+    "stats": {
+      "Recorded fire rate": "450 RPM",
+      "Recorded weight": "3.9 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/bmr-308/"
+  },
+  {
+    "name": "SCOUT RIFLE TD",
+    "category": "Sniper rifles",
+    "calibre": "5.56×45 mm",
+    "price": "$1,100",
+    "stats": {
+      "Recorded fire rate": "46 RPM",
+      "Recorded weight": "2.95 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/scout-rifle-td/"
+  },
+  {
+    "name": "MOSIN NAGANT",
+    "category": "Sniper rifles",
+    "calibre": "7.62×54 mm",
+    "price": "$4,500",
+    "stats": {
+      "Recorded fire rate": "46 RPM",
+      "Recorded weight": "4.1 kg",
+      "Listed effective range": "500 m",
+      "Muzzle velocity": "865 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/mosin-nagant/"
+  },
+  {
+    "name": "SV98",
+    "category": "Sniper rifles",
+    "calibre": "7.62×54 mm",
+    "price": "$5,200",
+    "stats": {
+      "Recorded fire rate": "46 RPM",
+      "Recorded weight": "5.8 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/sv98/"
+  },
+  {
+    "name": "MK22",
+    "category": "Sniper rifles",
+    "calibre": ".308 Win",
+    "price": "$6,400",
+    "stats": {
+      "Recorded fire rate": "46 RPM",
+      "Recorded weight": "6.3 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/mk22/"
+  },
+  {
+    "name": "AMR50",
+    "category": "Sniper rifles",
+    "calibre": ".50 Cal",
+    "price": "$8,800",
+    "stats": {
+      "Recorded fire rate": "41.5 RPM",
+      "Recorded weight": "12.5 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/amr-50/"
+  },
+  {
+    "name": "COMPOUND BOW",
+    "category": "Bows",
+    "calibre": "Standard arrows",
+    "price": "$800",
+    "stats": {
+      "Recorded fire rate": "90 RPM",
+      "Recorded weight": "1.3 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/compound-bow/"
+  },
+  {
+    "name": "GGX17",
+    "category": "Sidearms",
+    "calibre": "9×19 mm",
+    "price": "$200",
+    "stats": {
+      "Recorded fire rate": "600 RPM",
+      "Recorded weight": "0.63 kg"
+    },
+    "source": "https://wardogshub.gg/weapons/ggx-17/"
+  },
+  {
+    "name": "JUDGE",
+    "category": "Sidearms",
+    "calibre": ".45 Colt",
+    "price": "$250",
+    "stats": {
+      "Recorded fire rate": "200 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/judge/"
+  },
+  {
+    "name": "M1911",
+    "category": "Sidearms",
+    "calibre": ".45 ACP",
+    "price": "$300",
+    "stats": {
+      "Recorded fire rate": "430 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/m1911/"
+  },
+  {
+    "name": "GGX18",
+    "category": "Sidearms",
+    "calibre": "9×19 mm",
+    "price": "$800",
+    "stats": {
+      "Recorded fire rate": "1200 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/ggx-18/"
+  },
+  {
+    "name": "DEAGLE",
+    "category": "Sidearms",
+    "calibre": ".50 AE",
+    "price": "$900",
+    "stats": {
+      "Recorded fire rate": "267 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/deagle/"
+  },
+  {
+    "name": "RPG-7",
+    "category": "Launchers",
+    "calibre": "93 mm rocket",
+    "price": "$2,000",
+    "stats": {
+      "Recorded fire rate": "100 RPM",
+      "Recorded weight": "6.3 kg",
+      "Listed effective range": "300 m",
+      "Muzzle velocity": "100 m/s"
+    },
+    "source": "https://wardogshub.gg/weapons/rpg7/"
+  },
+  {
+    "name": "MAAWS",
+    "category": "Launchers",
+    "calibre": "84 mm anti-tank shell",
+    "price": "$2,600",
+    "stats": {
+      "Recorded fire rate": "100 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/maws/"
+  },
+  {
+    "name": "MGL-40",
+    "category": "Launchers",
+    "calibre": "40 mm grenade",
+    "price": "$6,000",
+    "stats": {
+      "Recorded fire rate": "75 RPM",
+      "Recorded weight": "Not recorded"
+    },
+    "source": "https://wardogshub.gg/weapons/mgl40/"
+  }
+]

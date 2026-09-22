@@ -49,7 +49,7 @@ const samePagePathFor = (loc: Locale) => {
       class="flex items-center gap-2 font-bold text-foreground"
       aria-label={site.name}
     >
-      <Icon name="lucide:hammer" class="h-6 w-6 text-nav" />
+      {site.brandMark ? <span class="flex h-7 w-7 items-center justify-center border border-nav text-lg font-black text-nav">{site.brandMark}</span> : <Icon name="lucide:hammer" class="h-6 w-6 text-nav" />}
       <span class="hidden sm:inline">{site.shortName}</span>
     </a>
 

@@ -1,3 +1,4 @@
+import type { AstroIntegration } from 'astro';
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
@@ -5,10 +6,65 @@ import tailwind from '@astrojs/tailwind';
 import icon from 'astro-icon';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-import { locales, defaultLocale } from './src/i18n/routing';
-import { CONTENT_TYPES } from './src/config/navigation';
 import { fallbackDetailPaths } from './src/lib/fallback-paths';
+import {
+  isProjectLandingEntrypoint,
+  isProjectLandingPath,
+} from './src/platform/project-landing';
+import {
+  activeSitePaths,
+  activeSiteRoot,
+  isPlatformBuild,
+} from './src/platform/site-context';
+
+const routingModule = isPlatformBuild
+  ? await import(/* @vite-ignore */ pathToFileURL(activeSitePaths.routing).href)
+  : await import('./src/i18n/routing');
+const navigationModule = isPlatformBuild
+  ? await import(/* @vite-ignore */ pathToFileURL(activeSitePaths.navigation).href)
+  : await import('./src/config/navigation');
+const siteModule = isPlatformBuild
+  ? await import(/* @vite-ignore */ pathToFileURL(activeSitePaths.config).href)
+  : await import('./src/config/site');
+
+const locales = routingModule.locales as readonly string[];
+const defaultLocale = routingModule.defaultLocale as string;
+const CONTENT_TYPES = navigationModule.CONTENT_TYPES as string[];
+const activeSiteConfig = siteModule.default ?? siteModule.site;
+const projectLandingEnabled = !isPlatformBuild || activeSiteConfig.projectLanding === true;
+
+function platformRouteFilter(): AstroIntegration {
+  return {
+    name: 'anvilwiki-platform-route-filter',
+    hooks: {
+      'astro:server:setup': ({ server, logger }) => {
+        if (projectLandingEnabled) return;
+
+        server.middlewares.use((request, response, next) => {
+          const pathname = new URL(request.url ?? '/', 'http://localhost').pathname;
+          if (!isProjectLandingPath(pathname)) return next();
+
+          response.statusCode = 404;
+          response.end('Not Found');
+        });
+        logger.info('AnvilWiki project landing routes are disabled for this site.');
+      },
+      'astro:build:setup': ({ pages, logger }) => {
+        if (projectLandingEnabled) return;
+
+        let removed = 0;
+        for (const [key, page] of pages) {
+          if (!isProjectLandingEntrypoint(page.component)) continue;
+          pages.delete(key);
+          removed += 1;
+        }
+        logger.info(`Removed ${removed} AnvilWiki project landing route entries.`);
+      },
+    },
+  };
+}
 
 /**
  * Build a map of page path → lastmod ISO date, read from MDX frontmatter
@@ -62,7 +118,7 @@ function buildLastmodMap(
   categoryCoverage: Map<string, Set<string>>,
 ): Map<string, string> {
   const map = new Map<string, string>();
-  const base = path.resolve('./src/content/wiki');
+  const base = activeSitePaths.content;
   if (!fs.existsSync(base)) return map;
 
   const walk = (dir: string) => {
@@ -166,7 +222,7 @@ function buildLastmodMap(
   // (+ /zh/ prefix). Same frontmatter-driven lastmod contract; the `updated`
   // field is optional, so chapters without it simply keep the default.
   const hb = path.resolve('./docs/handbook');
-  if (fs.existsSync(hb)) {
+  if (projectLandingEnabled && fs.existsSync(hb)) {
     for (const loc of ['en', 'zh']) {
       const dir = path.join(hb, loc);
       if (!fs.existsSync(dir)) continue;
@@ -194,7 +250,7 @@ function buildLastmodMap(
   return map;
 }
 
-const siteOrigin = process.env.SITE_URL || 'https://anvil.wiki';
+const siteOrigin = process.env.SITE_URL || `https://${activeSiteConfig.domain}`;
 
 // trailingSlash:'always' makes every generated URL end with "/", but the
 // lookup tables above (lastmodMap / noindexPaths / coverage keys) are built
@@ -277,8 +333,9 @@ function alternatesFor(pagePath: string): Array<{ lang: string; url: string }> |
 
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://anvil.wiki',
+  site: siteOrigin,
   output: 'static',
+  publicDir: isPlatformBuild ? activeSitePaths.generatedPublic : path.resolve('./public'),
   // Astro 7 flipped the default from true to 'jsx', which strips whitespace
   // between adjacent inline elements ("word" + "word" can render joined).
   // Pin the Astro 5/6 behavior so this migration never reflows a page —
@@ -309,6 +366,7 @@ export default defineConfig({
     },
   },
   integrations: [
+    platformRouteFilter(),
     mdx(),
     sitemap({
       // No `i18n` option on purpose: it fabricates hreflang alternates for
@@ -317,7 +375,13 @@ export default defineConfig({
       // Alternates are built per-URL in `serialize` from real MDX coverage.
       // noindex articles stay out of the sitemap (self-contradictory signal
       // otherwise — the page asks not to be indexed while the sitemap submits it).
-      filter: (url) => !noindexPaths.has(normalizePath(decodeSitemapPath(url))),
+      filter: (url) => {
+        const pagePath = normalizePath(decodeSitemapPath(url));
+        return (
+          (projectLandingEnabled || !isProjectLandingPath(pagePath)) &&
+          !noindexPaths.has(pagePath)
+        );
+      },
       // Inject <lastmod> from article frontmatter (see buildLastmodMap) and
       // hreflang alternates that mirror the page-level truth (see alternatesFor).
       serialize(item) {
@@ -339,9 +403,22 @@ export default defineConfig({
   ],
   vite: {
     resolve: {
-      alias: {
-        '~': '/src',
-      },
+      alias: [
+        ...(isPlatformBuild
+          ? [
+              { find: '~/config/site', replacement: activeSitePaths.config },
+              { find: '~/config/navigation', replacement: activeSitePaths.navigation },
+              { find: '~/config/project', replacement: path.resolve('./src/platform/project.ts') },
+              { find: '~/i18n/routing', replacement: activeSitePaths.routing },
+              {
+                find: /^~\/locales\/(.*)$/,
+                replacement: `${activeSitePaths.locales}/$1`,
+              },
+            ]
+          : []),
+        { find: '@site', replacement: activeSiteRoot },
+        { find: '~', replacement: path.resolve('./src') },
+      ],
     },
     build: {
       // Astro 7 (Vite 8) defaults CSS minification to Lightning CSS, which

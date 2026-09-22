@@ -1,0 +1,113 @@
+---
+import weapons from './data/weapons.json';
+import type { Locale } from '../../src/i18n/routing';
+import type { HomePageDefinition } from '../../src/platform/home-types';
+
+interface Props { locale: Locale; page: HomePageDefinition }
+const { locale } = Astro.props;
+const updates = [
+  ['PATCH 0.11', 'Find your next server', 'Maintenance was announced for September 14. Check current status before treating changes as live.', '/wardogs-patch-notes/'],
+  ['PLAYER SUPPORT', 'Server guide', 'Official and community servers, joining, regions and temporary bonus conditions.', '/wardogs-server-guide/'],
+  ['START HERE', 'Your first match', 'Learn the three-team objective and spending loop before buying an expensive kit.', '/wardogs-beginner-guide/'],
+];
+const featured = [
+  ['M4', 'm4'], ['AK74', 'ak74'], ['FAL', 'fal'], ['MP5', 'mp5'],
+  ['M249 SAW', 'm249-saw'], ['MOSIN NAGANT', 'mosin-nagant'], ['M500', 'm500'], ['RPG-7', 'rpg7'],
+].map(([name, image]) => ({ name, image, record: weapons.find((weapon) => weapon.name.toLowerCase() === name.toLowerCase()) }));
+const maps = [['Bakurani', 'bakurani', 60], ['Ozeti', 'ozeti', 55], ['Zestafona', 'zestafona', 56]] as const;
+const chapters = [
+  ['01', 'Intro', '0:45', '01-intro'], ['02', 'The Goal', '2:04', '02-the-goal'],
+  ['03', 'The Cash System', '2:42', '03-cash-system'], ['04', 'Progression & Classes', '3:31', '04-progression-and-classes'],
+  ['05', 'FOBs', '2:39', '05-fobs'], ['06', 'Loadouts', '3:45', '06-loadouts'],
+  ['07', 'Mechanics & Tips', '2:12', '07-mechanics-and-tips'], ['08', 'Future Systems', '2:28', '08-future-systems'],
+];
+const guides = [
+  ['Weapons', '/wardogs-weapons/', '33 test-build records'], ['Maps', '/wardogs-map/', 'Three terrain atlases'],
+  ['Beginner Guide', '/wardogs-beginner-guide/', 'First-match essentials'], ['Control Zone', '/wardogs-control-zone-guide/', 'The scoring objective'],
+  ['Cash Guide', '/wardogs-cash-guide/', 'Earn, spend and save'], ['Roles & Classes', '/wardogs-roles-and-classes/', 'Build your own role'],
+  ['Vehicles & Logistics', '/wardogs-vehicles-and-logistics/', 'Combined-arms support'], ['Building Guide', '/wardogs-building-guide/', 'FOBs and construction'],
+  ['Patch Notes', '/wardogs-patch-notes/', 'Launch and announced changes'], ['Server Guide', '/wardogs-server-guide/', 'Find the right match'],
+  ['Troubleshooting', '/wardogs-troubleshooting/', 'Queues, voice and crashes'],
+];
+const background = [
+  ['Release', '/wardogs-release-date/'], ['Beta', '/wardogs-beta/'], ['Playtest', '/wardogs-playtest/'],
+  ['Playtest Gameplay', '/wardogs-playtest-gameplay/'], ['Playtest Help', '/wardogs-playtest-troubleshooting/'],
+  ['$100K Contest', '/wardogs-100k-clip-contest/'], ['Monetization', '/wardogs-monetization/'],
+  ['Price', '/wardogs-price/'], ['PC Specs', '/wardogs-system-requirements/'], ['Console', '/wardogs-ps5-xbox-console/'],
+  ['Multiplayer', '/wardogs-multiplayer/'], ['Game Info', '/what-is-wardogs/'],
+];
+const faq = [
+  ['Are these guides for Early Access?', 'Yes. Official updates are separated from labelled beta-era footage and community data that still need live-build verification.'],
+  ['When did WARDOGS launch?', 'WARDOGS launched in Steam Early Access on September 10, 2026. This is not the completed version 1.0.'],
+  ['Do these guides rank the best weapons?', 'No. The catalogue labels historical test-build records. Current damage, prices and optimal loadouts are not independently verified.'],
+  ['What platforms are supported?', 'WARDOGS is available on Steam for Windows. The official trailer gives a 2028 console window, not a confirmed date or crossplay commitment.'],
+];
+---
+
+<div class="wd-home" lang={locale === 'ja' ? 'en' : undefined}>
+  <div class="signal"><span><i></i> AVAILABLE NOW · STEAM EARLY ACCESS</span><a href="/wardogs-server-guide/">SERVER GUIDE →</a></div>
+  <section class="hero" aria-labelledby="hero-title">
+    <img src="/media/hero-teaser.jpg" alt="WARDOGS tactical battlefield footage" fetchpriority="high" />
+    <div class="hero-inner"><p class="kicker">UNOFFICIAL / SOURCE-CHECKED FIELD GUIDE</p><p class="wordmark">WARDOGS</p><h1 id="hero-title">Your next deployment starts here.</h1><p>Early Access guides for the moving objective, persistent cash, weapons, maps and the next update. Every claim is read in its version context.</p><div class="actions"><a class="primary" href="/wardogs-beginner-guide/">Start with the basics ↗</a><a href="https://store.steampowered.com/app/1867240/WARDOGS/" target="_blank" rel="noreferrer">View on Steam ↗</a></div><div class="hero-facts"><span><b>100</b> PLAYERS</span><span><b>03</b> TEAMS</span><span><b>100</b> POINTS TO WIN</span></div></div>
+  </section>
+
+  <section class="band" aria-labelledby="updates-title"><div class="heading"><div><p class="kicker">CURRENT SIGNAL</p><h2 id="updates-title">What changed since launch?</h2></div><a href="/wardogs-development-updates/">All development updates ↗</a></div><div class="triptych">{updates.map(([label, title, text, href], index) => <a class="panel" href={href}><span class="code">0{index + 1} / {label}</span><h3>{title}</h3><p>{text}</p><b class="arrow">↗</b></a>)}</div></section>
+
+  <section class="band" aria-labelledby="armory-title"><div class="heading"><div><p class="kicker">FIELD ARMORY / HISTORICAL TEST DATA</p><h2 id="armory-title">Choose a weapon profile</h2></div><a href="/wardogs-weapons/">Browse all 33 records ↗</a></div><p class="context">Community test-build values, not verified Early Access balance. Select a profile to compare recorded calibre, price and fire rate.</p><div class="armory" data-home-armory><div class="weapon-stage"><img data-weapon-image src="/media/weapons/m4.webp" alt="Retouched visual reference of M4 weapon" /><div><span data-weapon-category>Assault rifles</span><h3 data-weapon-name>M4</h3><p data-weapon-facts>5.56×45 mm · $2,800 · 800 RPM</p></div></div><div class="weapon-list">{featured.map((item, index) => <button type="button" data-feature-weapon data-image={item.image} data-name={item.name} data-category={item.record?.category ?? 'Test record'} data-facts={`${item.record?.calibre ?? 'Test record'} · ${item.record?.price ?? 'Not verified'} · ${item.record?.stats['Recorded fire rate'] ?? 'Not verified'}`} aria-pressed={index === 0 ? 'true' : 'false'}><span>0{index + 1}</span><strong>{item.name}</strong><small>{item.record?.category}</small></button>)}</div></div></section>
+
+  <section class="band" aria-labelledby="maps-title"><div class="heading"><div><p class="kicker">TERRAIN ATLAS / TEST-BUILD REFERENCE</p><h2 id="maps-title">256 km². One randomized fight.</h2></div><a href="/wardogs-map/">Map overview ↗</a></div><p class="context">Three historical map records, 171 searchable working-name locations. Current server rotation and names still need live-build confirmation.</p><div class="map-grid">{maps.map(([name, image, count]) => <a href={`/wardogs-${image}-map/`}><img src={`/media/maps/${image}.webp`} alt={`${name} overhead terrain map`} loading="lazy" /><div><span>MAP / {count} LOCATIONS</span><h3>{name}</h3><b>↗</b></div></a>)}</div></section>
+
+  <section class="band" aria-labelledby="video-title"><div class="heading"><div><p class="kicker">BETA-ERA COMMUNITY FIELD GUIDE</p><h2 id="video-title">Watch the guide by chapter</h2></div><a href="https://www.youtube.com/watch?v=tF4-GnGlo4I" target="_blank" rel="noreferrer">Full video by TacticalNed ↗</a></div><p class="context">Historical gameplay context, not proof of current balance or availability.</p><div class="video-layout" data-home-video><div class="video-stage"><img data-chapter-image src="/media/clips/02-the-goal.jpg" alt="WARDOGS community gameplay chapter" loading="lazy" /><div><span data-chapter-number>CH 02</span><h3 data-chapter-title>The Goal</h3><a href="https://www.youtube.com/watch?v=tF4-GnGlo4I" target="_blank" rel="noreferrer">Watch source video ↗</a></div></div><div class="chapters">{chapters.map(([number, title, duration, file], index) => <button type="button" data-chapter data-number={number} data-title={title} data-file={file} aria-pressed={index === 1 ? 'true' : 'false'}><img src={`/media/clips/${file}.jpg`} alt="" loading="lazy" /><span><small>{number} / {duration}</small><strong>{title}</strong></span></button>)}</div></div></section>
+
+  <section class="band" aria-labelledby="roadmap-title"><div class="heading"><div><p class="kicker">RELEASE / PLANNED / IN DEVELOPMENT</p><h2 id="roadmap-title">Track what comes next</h2></div></div><div class="triptych"><a class="panel" href="/wardogs-roadmap/"><span class="code">01 / STATUS TRACKER</span><h3>Roadmap</h3><p>Separate shipped fixes from announced changes and longer-term targets.</p></a><a class="panel" href="/wardogs-planned-content/"><span class="code">02 / FUTURE SYSTEMS</span><h3>Planned Content</h3><p>Community tools, Season 2 work and plans beyond version 1.0.</p></a><a class="panel" href="/wardogs-development-updates/"><span class="code">03 / RELEASE LOG</span><h3>Development Updates</h3><p>Changes that affect current player guides.</p></a></div></section>
+
+  <section class="band" aria-labelledby="guides-title"><div class="heading"><div><p class="kicker">FIELD MANUAL</p><h2 id="guides-title">Mechanics-first WARDOGS guides</h2></div></div><div class="guide-grid">{guides.map(([label, href, detail], index) => <a href={href}><span>{String(index + 1).padStart(2, '0')}</span><strong>{label}</strong><small>{detail}</small><b>↗</b></a>)}</div></section>
+
+  <section class="band doctrine"><div><p class="kicker">THE MATCH IN BRIEF</p><h2>Three forces. One moving objective.</h2></div><div class="triptych"><div class="panel"><span class="code">01 / CONTROL</span><h3>Control</h3><p>Hold the randomized 2 × 2 km Control Zone at each 30-second scoring check.</p></div><div class="panel"><span class="code">02 / ECONOMY</span><h3>Earn</h3><p>Start with $10,000. Objective and team actions can reward persistent cash.</p></div><div class="panel"><span class="code">03 / ROLE</span><h3>Deploy</h3><p>Choose equipment and vehicles for your job; there are no fixed classes.</p></div></div></section>
+
+  <section class="band" aria-labelledby="background-title"><div class="heading"><div><p class="kicker">ACCESS & BACKGROUND</p><h2 id="background-title">Track dates, access and updates</h2></div></div><div class="info-grid">{background.map(([label, href]) => <a href={href}>{label}<span>↗</span></a>)}</div></section>
+
+  <section class="band faq" aria-labelledby="faq-title"><div class="heading"><div><p class="kicker">QUICK ANSWERS</p><h2 id="faq-title">WARDOGS FAQ</h2></div></div>{faq.map(([question, answer], index) => <details open={index === 0}><summary>{question}</summary><p>{answer}</p></details>)}</section>
+
+  <section class="band sources"><div><p class="kicker">VERIFICATION LOG</p><h2>Sources and references</h2><p>Reviewed September 14, 2026. Check official posts for later changes; community footage and weapon records are historical.</p></div><div><a href="https://store.steampowered.com/app/1867240/WARDOGS/" target="_blank" rel="noreferrer">WARDOGS on Steam ↗</a><a href="https://www.team17.com/games/wardogs" target="_blank" rel="noreferrer">Team17 game overview ↗</a><a href="https://steamcommunity.com/app/1867240/allnews/" target="_blank" rel="noreferrer">Steam announcements ↗</a></div></section>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-home-armory]').forEach((armory) => {
+    const image = armory.querySelector<HTMLImageElement>('[data-weapon-image]');
+    const name = armory.querySelector<HTMLElement>('[data-weapon-name]');
+    const category = armory.querySelector<HTMLElement>('[data-weapon-category]');
+    const facts = armory.querySelector<HTMLElement>('[data-weapon-facts]');
+    armory.querySelectorAll<HTMLButtonElement>('[data-feature-weapon]').forEach((button) => button.addEventListener('click', () => {
+      armory.querySelectorAll('[data-feature-weapon]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+      if (image) { image.src = `/media/weapons/${button.dataset.image}.webp`; image.alt = `Retouched visual reference of ${button.dataset.name} weapon`; }
+      if (name) name.textContent = button.dataset.name ?? '';
+      if (category) category.textContent = button.dataset.category ?? '';
+      if (facts) facts.textContent = button.dataset.facts ?? '';
+    }));
+  });
+  document.querySelectorAll<HTMLElement>('[data-home-video]').forEach((video) => {
+    const image = video.querySelector<HTMLImageElement>('[data-chapter-image]');
+    const number = video.querySelector<HTMLElement>('[data-chapter-number]');
+    const title = video.querySelector<HTMLElement>('[data-chapter-title]');
+    video.querySelectorAll<HTMLButtonElement>('[data-chapter]').forEach((button) => button.addEventListener('click', () => {
+      video.querySelectorAll('[data-chapter]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+      if (image) image.src = `/media/clips/${button.dataset.file}.jpg`;
+      if (number) number.textContent = `CH ${button.dataset.number}`;
+      if (title) title.textContent = button.dataset.title ?? '';
+    }));
+  });
+</script>
+
+<style>
+  .wd-home{--ink:#101b19;--panel:#192622;--line:#3b4941;--paper:#e8eee7;--muted:#aec0b3;--orange:#ecab58;color:var(--paper);background:var(--ink);font-family:var(--site-font-body);margin:-2rem -1rem;padding-bottom:2rem}.wd-home *{box-sizing:border-box}.wd-home a{text-decoration:none}.wd-home a:focus-visible,.wd-home button:focus-visible,.wd-home summary:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+  .signal{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 1.2rem;background:#af7140;color:#161915;font-size:.68rem;font-weight:900;letter-spacing:.06em}.signal a{color:#161915}.signal i{display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:#253c28;margin-right:.35rem}
+  .hero{position:relative;min-height:min(35rem,70vh);overflow:hidden;background:#17221e}.hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.43)}.hero-inner{position:relative;max-width:74rem;margin:auto;padding:4rem 1.25rem 3rem}.kicker{font-size:.69rem;font-weight:900;letter-spacing:.1em;color:var(--orange);margin:0 0 .55rem}.wordmark{font-size:1.1rem;letter-spacing:.12em;font-weight:950;color:#fff;margin:0 0 1.5rem}.hero h1{max-width:35rem;font-size:clamp(2.4rem,4.7vw,4.5rem);line-height:1.04;margin:0;color:#fff;font-weight:900;letter-spacing:0}.hero-inner>p:not(.kicker):not(.wordmark){max-width:33rem;color:#e2e9e2;font-size:1rem;line-height:1.6}.actions{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1.5rem}.actions a{display:inline-flex;align-items:center;border:1px solid #c5d3ca;color:#fff;padding:.8rem 1rem;font-size:.83rem;font-weight:800}.actions .primary{background:var(--orange);border-color:var(--orange);color:#141a15}.hero-facts{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2rem}.hero-facts span{font-size:.65rem;letter-spacing:.08em;font-weight:800;color:#d6e1d8}.hero-facts b{font-size:1.4rem;color:#fff;margin-right:.3rem}
+  .band{max-width:74rem;margin:auto;padding:3.8rem 1.25rem;border-bottom:1px solid var(--line)}.heading{display:flex;justify-content:space-between;align-items:end;gap:1rem;margin-bottom:1.3rem}.heading h2,.band h2{font-size:clamp(1.5rem,2.4vw,2.4rem);line-height:1.15;color:#f4f6f0;margin:0;letter-spacing:0}.heading>a{color:var(--orange);font-size:.77rem;font-weight:800;white-space:nowrap}.context{max-width:47rem;font-size:.8rem;color:var(--muted);line-height:1.5;margin:-.3rem 0 1.4rem}.triptych,.map-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}.panel{display:block;background:var(--panel);padding:1.4rem;color:#f3f7ef;min-height:10rem;position:relative}.panel:is(a):hover{background:#263830}.code{font-size:.67rem;color:var(--orange);font-weight:850;letter-spacing:.08em}.panel h3{font-size:1.15rem;margin:.65rem 0 .45rem}.panel p{font-size:.78rem;line-height:1.5;color:var(--muted);margin:0}.arrow{position:absolute;right:1.2rem;top:1.2rem;color:var(--orange)}
+  .armory{display:grid;grid-template-columns:minmax(0,1fr) 18rem;gap:1rem}.weapon-stage{position:relative;min-height:24rem;background:#26322d;display:flex;align-items:center;justify-content:center;overflow:hidden}.weapon-stage>img{width:min(85%,40rem);max-height:14rem;object-fit:contain;mix-blend-mode:screen}.weapon-stage>div{position:absolute;bottom:0;left:0;right:0;background:#0e1715e8;padding:1.2rem}.weapon-stage span{color:var(--orange);font-size:.68rem;text-transform:uppercase;font-weight:800}.weapon-stage h3{margin:.2rem 0;color:#fff;font-size:1.6rem}.weapon-stage p{color:#d4ddd2;font-size:.75rem;margin:0}.weapon-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}.weapon-list button{min-width:0;text-align:left;background:var(--panel);color:#fff;border:0;padding:.65rem;cursor:pointer;display:flex;flex-direction:column;justify-content:center}.weapon-list button:hover,.weapon-list button[aria-pressed=true]{background:#364737}.weapon-list button[aria-pressed=true]{box-shadow:inset 3px 0 var(--orange)}.weapon-list span{font-size:.63rem;color:var(--orange)}.weapon-list strong{font-size:.85rem}.weapon-list small{font-size:.65rem;color:var(--muted)}
+  .map-grid>a{position:relative;display:block;min-height:17rem;overflow:hidden;background:#25332a;color:#fff}.map-grid img{width:100%;height:100%;object-fit:cover;filter:brightness(.75);transition:transform .2s}.map-grid a:hover img{transform:scale(1.04)}.map-grid a>div{position:absolute;bottom:0;left:0;right:0;background:#0c1715da;padding:1rem}.map-grid span{font-size:.67rem;color:var(--orange);font-weight:800}.map-grid h3{margin:.2rem 0;color:#fff;font-size:1.15rem}.map-grid b{position:absolute;right:1rem;bottom:1.2rem;color:var(--orange)}
+  .video-layout{display:grid;grid-template-columns:minmax(0,1fr) 17rem;gap:1rem}.video-stage{background:#25302b;position:relative;min-height:24rem}.video-stage>img{width:100%;height:100%;object-fit:cover;filter:brightness(.72)}.video-stage>div{position:absolute;bottom:0;left:0;right:0;padding:1.3rem;background:#0c1715de}.video-stage span{font-size:.68rem;color:var(--orange);font-weight:900}.video-stage h3{color:#fff;margin:.2rem 0}.video-stage a{color:var(--orange);font-size:.75rem}.chapters{max-height:24rem;overflow:auto;display:grid;align-content:start;gap:1px;background:var(--line)}.chapters button{display:flex;gap:.6rem;align-items:center;text-align:left;border:0;background:var(--panel);color:#fff;padding:.45rem;cursor:pointer}.chapters button:hover,.chapters button[aria-pressed=true]{background:#354638}.chapters img{width:4.8rem;height:2.7rem;object-fit:cover}.chapters span{display:grid}.chapters small{color:var(--orange);font-size:.62rem}.chapters strong{font-size:.72rem;line-height:1.25}
+  .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}.guide-grid a{display:grid;grid-template-columns:2rem 1fr auto;gap:.2rem .5rem;align-items:center;background:var(--panel);color:#fff;padding:.8rem}.guide-grid a:hover{background:#293b32}.guide-grid span,.guide-grid b{color:var(--orange);font-size:.72rem}.guide-grid strong{font-size:.82rem}.guide-grid small{grid-column:2/4;color:var(--muted);font-size:.68rem}.doctrine{display:grid;grid-template-columns:15rem 1fr;gap:2rem}.doctrine .triptych{grid-template-columns:repeat(3,minmax(0,1fr))}.doctrine .panel{min-height:9rem;padding:1rem}.info-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}.info-grid a{display:flex;justify-content:space-between;gap:.4rem;background:var(--panel);color:#fff;padding:.85rem;font-size:.76rem;font-weight:700}.info-grid a:hover{background:#293b32}.info-grid span{color:var(--orange)}.faq details{border-bottom:1px solid var(--line);padding:.8rem 0}.faq summary{cursor:pointer;font-size:.87rem;font-weight:800}.faq details p{color:var(--muted);font-size:.78rem;line-height:1.5;max-width:48rem}.sources{display:grid;grid-template-columns:1fr 1fr;gap:2rem}.sources p:not(.kicker){color:var(--muted);font-size:.76rem;line-height:1.5}.sources>div:last-child{display:grid;align-content:start;gap:.5rem}.sources a{color:var(--orange);font-size:.79rem;border-bottom:1px solid var(--line);padding:.5rem}
+  @media(max-width:800px){.armory,.video-layout{grid-template-columns:1fr}.weapon-list{grid-template-columns:repeat(4,minmax(0,1fr))}.chapters{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.doctrine{grid-template-columns:1fr}.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:600px){.hero{min-height:32rem}.hero-inner{padding-top:2.4rem}.hero-facts{gap:.8rem}.hero-facts b{display:block}.band{padding:2.6rem 1rem}.heading{display:block}.heading>a{display:inline-block;margin-top:.7rem}.triptych,.map-grid,.doctrine .triptych{grid-template-columns:1fr}.panel{min-height:8rem}.map-grid>a{min-height:13rem}.weapon-stage{min-height:17rem}.weapon-list{grid-template-columns:repeat(2,minmax(0,1fr))}.video-stage{min-height:16rem}.guide-grid,.info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sources{grid-template-columns:1fr}.signal{font-size:.56rem}.signal a{white-space:nowrap}}
+</style>

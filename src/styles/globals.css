@@ -3,11 +3,7 @@
 @tailwind utilities;
 
 /**
- * Theme color variables — the ONLY place to change colors when re-theming.
- *
- * 👉 RE-THEME: Change ONLY these 4 lines (2 in :root, 2 in .dark).
- * All other CSS variables and all components reference these via var().
- * Do NOT hardcode hex/rgba/Tailwind color classes elsewhere.
+ * 旧单站模式的默认主题。多站模式由 sites/<id>/theme.css 覆盖品牌与字体变量。
  */
 @layer base {
   :root {
@@ -82,6 +78,10 @@
   /* Prevent FOUC: apply dark class before paint. */
   html {
     color-scheme: light;
+    font-family: var(--site-font-body, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--site-font-heading, var(--site-font-body, ui-sans-serif, system-ui, sans-serif));
   }
   html.dark {
     color-scheme: dark;

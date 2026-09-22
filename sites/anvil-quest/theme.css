@@ -1,0 +1,18 @@
+/* 站点品牌和字体；布局与组件规则继续由 src/styles/globals.css 提供。 */
+:root[data-site-theme='default'] {
+  --brand: 22 90% 52%;
+  --brand-light: 22 90% 62%;
+  --brand-h: 22;
+  --brand-s: 90%;
+  --brand-text: 22 90% 40%;
+  --site-font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --site-font-heading: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+:root.dark[data-site-theme='default'] {
+  --brand: 22 85% 48%;
+  --brand-light: 22 85% 58%;
+  --brand-h: 22;
+  --brand-s: 85%;
+  --brand-text: 22 85% 52%;
+}

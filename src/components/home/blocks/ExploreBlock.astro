@@ -1,0 +1,21 @@
+---
+import ExploreModules from '~/components/home/ExploreModules.astro';
+import type { Locale } from '~/i18n/routing';
+import type { HomeBlock } from '~/platform/home-types';
+
+interface Props {
+  block: HomeBlock;
+  locale: Locale;
+}
+
+const { block, locale } = Astro.props;
+if (block.type !== 'explore') throw new Error(`ExploreBlock cannot render ${block.type}`);
+---
+
+{block.modules.length > 0 && (
+  <section class="section border-t border-border">
+    <h2 class="text-2xl font-bold">{block.title}</h2>
+    {block.description && <p class="mt-1 text-sm text-muted-foreground">{block.description}</p>}
+    <div class="mt-8"><ExploreModules modules={block.modules} locale={locale} /></div>
+  </section>
+)}

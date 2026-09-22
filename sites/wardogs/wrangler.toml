@@ -1,0 +1,6 @@
+# WARDOGS 的构建期变量。Pages Git 集成不会自动读取这个子目录文件。
+# Pages 构建命令：pnpm build:site wardogs
+
+[vars]
+SITE_ID = "wardogs"
+SITE_URL = "https://www.wardogs.top"

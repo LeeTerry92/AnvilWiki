@@ -1,0 +1,12 @@
+# FORKERS READ THIS FIRST
+# 单站 fork 初始化时，脚本会将此文件复制为根目录 wrangler.toml，
+# 并写入自己的域名和可选集成变量。
+# 同仓库多站部署不在根目录放 wrangler.toml。
+# END FORKER WARNING
+
+name = "anvilwiki"
+compatibility_date = "2026-08-11"
+pages_build_output_dir = "dist"
+
+[vars]
+SITE_URL = ""

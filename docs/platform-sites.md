@@ -17,6 +17,7 @@ sites/wardogs/
 ├── content/wiki/        # 独立 MDX 内容
 ├── assets/              # 文章封面等构建期资源
 ├── theme.css            # 本站品牌色、明暗主题与字体栈
+├── wrangler.toml         # 本站构建期变量
 └── public/              # 图标、manifest、hero 等静态资源
 ```
 
@@ -83,12 +84,16 @@ export const homePages = {
 
 | Pages 项目 | 构建命令 | 环境变量 | 输出目录 |
 |---|---|---|---|
-| `wiki-anvil-quest` | `pnpm build` | `SITE_ID=anvil-quest`、`SITE_URL=https://anvil.wiki` | `dist` |
-| `wiki-wardogs` | `pnpm build` | `SITE_ID=wardogs`、`SITE_URL=https://www.wardogs.top` | `dist` |
+| Anvil Quest 的 Pages 项目 | `pnpm build:site anvil-quest` | `sites/anvil-quest/wrangler.toml` | `dist` |
+| WARDOGS 的 Pages 项目 | `pnpm build:site wardogs` | `sites/wardogs/wrangler.toml` | `dist` |
 
-两个项目都使用 Node 22 和 pnpm 11。Cloudflare Pages 中分别绑定正式域名；预览部署也沿用各项目自己的 `SITE_ID`，因此不会互相覆盖构建产物或缓存。
+两个项目都使用 Node 22 和 pnpm 11。框架预设选 Astro，仓库根目录留空，输出目录填 `dist`，构建命令按上表分别填写。Cloudflare Pages 中分别绑定正式域名；预览部署沿用各项目自己的构建命令。
 
-仓库根存在 `wrangler.toml` 时，它可能覆盖 Dashboard 中的同名构建变量。多站平台部署推荐让每个 Pages 项目在 Dashboard 明确设置 `SITE_ID` 与 `SITE_URL`，并确认没有根配置把它们写死成单一站点；详细优先级见 [deployment.md](deployment.md)。
+Pages Git 集成只自动读取仓库根的 `wrangler.toml`，不能靠放在 `sites/<id>/` 就让它按项目选择。多站仓库的根目录**没有** `wrangler.toml`，两个 Pages 项目在 Dashboard 分别设置构建命令和输出目录。`build:site` 读取指定站点文件的 `[vars]`，先清除继承的站点变量，并将 `.env.example` 中列出的可选变量置空，再启动原有构建；本地 `.env` 也不会补入另一站的变量。因此每站的域名、评论、广告和统计只在本目录维护。不要再用普通 `pnpm build` 作为这两个 Pages 项目的构建命令，也不要在 Dashboard 中配置同名站点变量。变更构建命令后重新部署，并检查构建日志出现 `[site] building wardogs for https://www.wardogs.top`。
+
+从旧配置迁移时，先把两个 Pages 项目的构建命令改成上表，再推送删除根 `wrangler.toml` 的提交，避免某个项目仍按普通 `pnpm build` 构建。根配置的旧内容已迁至 Anvil Quest 的站点文件；`wrangler.template.toml` 仅供单站 fork 初始化，不会被 Pages 自动读取。
+
+这两个子目录文件是**构建期变量清单**，不是 Pages Git 集成自动应用的 Wrangler 部署配置。新增 Pages Functions 绑定时，还需按 Cloudflare 的 Pages 配置规则单独处理部署流程；当前两站都是纯静态输出。
 
 ## 首期边界
 

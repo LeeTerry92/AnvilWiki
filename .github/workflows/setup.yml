@@ -66,6 +66,9 @@ jobs:
                   'or https://mygame.wiki. Fix the site_url input and re-run.'
               )
           p = 'wrangler.toml'
+          if not os.path.exists(p):
+              import shutil
+              shutil.copyfile('wrangler.template.toml', p)
           s = open(p).read()
           new_vars = '''[vars]
           # Site (must include https:// protocol — Astro validates this as a URL)

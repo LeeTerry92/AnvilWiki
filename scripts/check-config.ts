@@ -173,7 +173,7 @@ if (!domain) {
 } else if (!effectiveUrl && process.env.SITE_ID) {
   console.log(`  ℹ️  SITE_ID=${process.env.SITE_ID}: no SITE_URL override; using site.ts domain https://${domain}`);
 } else if (!effectiveUrl) {
-  err(`no SITE_URL found (env or wrangler.toml) — canonical/sitemap would fall back to https://${domain}`);
+  console.log(`  ℹ️  no SITE_URL override; using site.ts domain https://${domain}`);
 } else {
   try {
     const host = new URL(effectiveUrl).host;

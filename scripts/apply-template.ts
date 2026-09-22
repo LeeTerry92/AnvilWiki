@@ -901,12 +901,15 @@ async function main() {
   write('public/manifest.json', rewriteManifest(skinInput));
   console.log('   ✅ public/manifest.json');
 
-  const wrangler = fs.existsSync(path.resolve(ROOT, 'wrangler.toml'))
-    ? rewriteWranglerVars(skinInput, read('wrangler.toml'))
+  const wranglerSource = fs.existsSync(path.resolve(ROOT, 'wrangler.toml'))
+    ? 'wrangler.toml'
+    : 'wrangler.template.toml';
+  const wrangler = fs.existsSync(path.resolve(ROOT, wranglerSource))
+    ? rewriteWranglerVars(skinInput, read(wranglerSource))
     : null;
   if (wrangler !== null) {
     write('wrangler.toml', wrangler);
-    console.log('   ✅ wrangler.toml ([vars] reset — demo Giscus config cleared)');
+    console.log('   ✅ wrangler.toml ([vars] set for this site)');
   }
 
   // Reset the demo author registry so fork sites don't inherit demo authors.

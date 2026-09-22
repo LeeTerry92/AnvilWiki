@@ -23,7 +23,7 @@ AnvilWiki 内置可选的评论系统，基于 [Giscus](https://giscus.app) —�
    - `data-category-id` → `PUBLIC_GISCUS_CATEGORY_ID`
    - `mapping` → `PUBLIC_GISCUS_MAPPING`（默认 `pathname`，通常不用改）
 4. 把这 5 个值填到 `.env`（参考 `.env.example`）—— 本地开发用
-5. **生产部署**：把这 5 个值配到 Cloudflare。⚠️ 本仓库根目录有 `wrangler.toml`，它一旦存在就会**接管 env 配置，dashboard 的 Environment variables 会被忽略**。两个选择：
+5. **生产部署**：把这 5 个值配到 Cloudflare。⚠️ 单站 fork 初始化后会生成根目录 `wrangler.toml`，它一旦存在就会**接管 env 配置，dashboard 的 Environment variables 会被忽略**。两个选择：
    - **删掉 `wrangler.toml`**（`git rm wrangler.toml && git commit`），然后在 Cloudflare dashboard 的 Settings → Environment variables 配 5 个变量
    - **或改 `wrangler.toml` 的 `[vars]`**，把 `PUBLIC_GISCUS_*` 5 个值改成你的
 6. `pnpm dev`，访问任意文章页，评论区出现在正文下方

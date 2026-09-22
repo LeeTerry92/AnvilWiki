@@ -171,13 +171,14 @@ describe('ci.yml uses the shared gates + runs the ops toolkit', () => {
       'anvil-quest',
       'wardogs',
     ]);
-    expect(job?.env).toEqual({
+    const typecheck = job?.steps?.find((step) => step.run === 'pnpm typecheck');
+    expect(typecheck?.env).toEqual({
       SITE_ID: '${{ matrix.site }}',
       SITE_URL: '${{ matrix.site-url }}',
     });
     const commands = job?.steps?.map((step) => step.run).filter(Boolean);
     expect(commands).toContain('pnpm typecheck');
-    expect(commands).toContain('pnpm build');
+    expect(commands).toContain('pnpm build:site ${{ matrix.site }}');
   });
 });
 
@@ -533,7 +534,7 @@ describe('setup.yml python [vars] rewrite is value-aware (executes the real here
     // Pinned against the REAL shipping header (authors.ts precedent): if the
     // wrangler.toml anchors drift, this goes red instead of the workflow
     // silently leaving a block that lies about the file still being demo.
-    const real = readFileSync(join(root, 'wrangler.toml'), 'utf8');
+    const real = readFileSync(join(root, 'wrangler.template.toml'), 'utf8');
     const header = real.slice(0, real.indexOf('END FORKER WARNING') + 'END FORKER WARNING'.length);
     expect(header).toContain('FORKERS READ THIS FIRST');
     const { out } = runVarsRewrite(`${header}\n\n${demoVars}`);

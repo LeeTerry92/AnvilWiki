@@ -60,9 +60,6 @@ jobs:
             site-url: https://anvil.wiki
           - site: wardogs
             site-url: https://www.wardogs.top
-    env:
-      SITE_ID: ${{ matrix.site }}
-      SITE_URL: ${{ matrix.site-url }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
@@ -83,9 +80,12 @@ jobs:
 
       - name: Typecheck platform site
         run: pnpm typecheck
+        env:
+          SITE_ID: ${{ matrix.site }}
+          SITE_URL: ${{ matrix.site-url }}
 
       - name: Build platform site
-        run: pnpm build
+        run: pnpm build:site ${{ matrix.site }}
 
   # apply-template has ZERO vitest coverage and only breaks in real
   # (non-dry-run) mode, which the demo repo never exercises — three real-mode

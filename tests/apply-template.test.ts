@@ -241,17 +241,17 @@ describe('rewriteWranglerVars is value-aware (a re-run must not wipe the user en
     expect(rewriteWranglerVars(makeInput(), demoOnce)).toBe(demoOnce);
   });
 
-  test('DEMO_VAR_VALUES covers every live value in the shipped wrangler.toml (drift guard)', () => {
+  test('DEMO_VAR_VALUES covers every live value in the Anvil Quest config (drift guard)', () => {
     // If the demo gains a new non-empty env value that is not registered as a
     // demo value, a re-run would PRESERVE it into every fork — the exact leak
     // this list exists to prevent. Every uncommented [vars] value must either
     // be listed here or be empty.
-    const toml = readFileSync(join(repoRoot, 'wrangler.toml'), 'utf8');
+    const toml = readFileSync(join(repoRoot, 'sites/anvil-quest/wrangler.toml'), 'utf8');
     const section = toml.match(/(?:^|\n)\[vars\]\r?\n([\s\S]*?)(?=\r?\n\[|$)/)?.[1] ?? '';
     const values = [...section.matchAll(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"(.*)"\s*$/gm)].map(
       (m) => m[2],
     );
-    expect(values.length, 'the shipped wrangler.toml should carry demo values').toBeGreaterThan(0);
+    expect(values.length, 'Anvil Quest config should carry demo values').toBeGreaterThan(0);
     // "pathname" is the template's GENERIC giscus mapping default (a user may
     // legitimately set "url"/"topic" — the rewrite preserves those), not demo
     // identity; it is deliberately not in DEMO_VAR_VALUES. "Announcements" is
@@ -259,7 +259,7 @@ describe('rewriteWranglerVars is value-aware (a re-run must not wipe the user en
     // giscus category name) — its demo-ness is the PAIRED rule: demo category
     // name + demo category ID together, asserted below. Anything else
     // non-empty must be registered.
-    const genericDefaults = new Set(['pathname']);
+    const genericDefaults = new Set(['pathname', 'anvil-quest']);
     for (const v of values) {
       expect(
         v === '' || genericDefaults.has(v) || v === 'Announcements' || DEMO_VAR_VALUES.includes(v),

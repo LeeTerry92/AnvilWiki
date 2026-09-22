@@ -71,7 +71,7 @@ Cloudflare 会自动检测 Astro，但请确认以下设置：
 
 #### wrangler.toml 接管警告
 
-> 🚨 **重要：`wrangler.toml` 会接管 env 配置。** 本仓库根目录有 `wrangler.toml`，里面声明了 `[vars]` 段。**当 wrangler.toml 存在时，Cloudflare dashboard 的 Environment variables 会被完全忽略**（[官方文档](https://developers.cloudflare.com/pages/functions/wrangler-configuration/)）。所以你有两个选择：
+> 🚨 **重要：`wrangler.toml` 会接管 env 配置。** 多站源码的根目录没有 `wrangler.toml`。单站 fork 运行 `pnpm apply-template` 或 Initialize AnvilWiki 后，会从 `wrangler.template.toml` 生成根配置并写入自己的 `SITE_URL`。**当 wrangler.toml 存在时，Cloudflare dashboard 的 Environment variables 会被完全忽略**（[官方文档](https://developers.cloudflare.com/pages/functions/wrangler-configuration/)）。所以你有两个选择：
 >
 > - **选项 A（推荐新手）：删掉 `wrangler.toml`**，然后 dashboard 的 Environment variables 就能正常工作。fork 后 `git rm wrangler.toml && git commit`，再在 dashboard 配 env 即可。
 > - **选项 B（保留 wrangler.toml）：改 `wrangler.toml` 的 `[vars]` 值**，把 `SITE_URL`、`PUBLIC_GISCUS_*`、`PUBLIC_GA_ID` 与要启用的 `PUBLIC_ADSTERRA_SLOT_*` 改成你自己的，dashboard 不用配（配了也被忽略）。
@@ -217,7 +217,7 @@ AnvilWiki 是纯静态站点（`dist/`），可以部署到任何静态托管：
 
 ## 环境变量清单
 
-> ⚠️ **先读 [wrangler.toml 接管警告](#wranglertoml-接管警告)**：如果你保留了 `wrangler.toml`（方案 A/B），下表所有变量必须写进它的 `[vars]` 段——此时在 Pages → Settings → **Environment variables** 里配置是**无效的**（dashboard 会被完全忽略）。删掉 `wrangler.toml`（方案 C）才用 dashboard 配置。
+> ⚠️ **先读 [wrangler.toml 接管警告](#wranglertoml-接管警告)**：单站 fork 如果保留 `wrangler.toml`，下表变量写进根配置的 `[vars]`；删除该文件后才用 dashboard 配置。同仓库多站请按 [多站部署](platform-sites.md#cloudflare-pages-独立部署) 使用 `pnpm build:site <id>` 和各站自己的变量文件。
 
 Dashboard（方案 C）在 Pages → **Settings** → **Environment variables** 配置。支持 Production / Preview 两套。
 
